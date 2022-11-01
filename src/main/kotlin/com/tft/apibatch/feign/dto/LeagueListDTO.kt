@@ -7,7 +7,7 @@ import lombok.*
 
 data class LeagueListDTO (
     val leagueId: String?,
-    val entries: List<LeagueItemDTO>?,
+    val entries: List<LeagueItemDTO>,
     val tier: String?,
     val name: String?,
     val queue: String?,
@@ -25,7 +25,7 @@ data class LeagueListDTO (
         val rank: String?,
         val leaguePoIntegers: Int?,
         val losses: Int?,
-        val summonerId: String?,
+        val summonerId: String,
     )
 
 

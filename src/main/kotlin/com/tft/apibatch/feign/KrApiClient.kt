@@ -19,11 +19,11 @@ interface KrApiClient {
     @RequestMapping(method = [RequestMethod.GET], value = ["/tft/league/v1/challenger"])
     fun callChallengerLeagues(
         @RequestHeader("X-Riot-Token") xRiotToken: String,
-    ): LeagueListDTO?
+    ): LeagueListDTO
 
     @RequestMapping(method = [RequestMethod.GET], value = ["/tft/summoner/v1/summoners/{encryptedSummerId}"])
     fun callSummoner(
         @RequestHeader("X-Riot-Token") xRiotToken: String,
         @PathVariable("encryptedSummerId") summerId: String
-    ): SummonerDTO?
+    ): SummonerDTO
 }

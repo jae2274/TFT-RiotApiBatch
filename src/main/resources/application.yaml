@@ -1,0 +1,44 @@
+api-token: RGAPI-83111e26-a976-4049-94ad-77ddf543066d
+break-time: 2000
+
+mongodb:
+  uri: mongodb://localhost:27017
+  dbname: tft_service
+
+
+feign:
+  tft:
+    krApi:
+      name: krApiClient
+      url: https://kr.api.riotgames.com
+    asiaApi:
+      name: asiaApiClient
+      url: https://asia.api.riotgames.com
+
+#h2 console 활성화 및 경로 설정
+spring.h2.console.enabled: true
+spring.h2.console.path: /h2-console
+
+#h2 db 설정
+spring:
+  datasource:
+    url: jdbc:h2:~/test;
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true   # 아름답게 출력h
+  batch:
+    job:
+      enabled: false
+#spring:
+#  data:
+#    mongodb:
+#      host: 10.201.213.51
+#
+#      port: 25017
+#      database: ads_service

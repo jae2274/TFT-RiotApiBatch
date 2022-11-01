@@ -10,7 +10,7 @@ plugins {
 
 group = "com.tft"
 version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_17
+java.sourceCompatibility = JavaVersion.VERSION_18
 
 repositories {
     mavenCentral()
@@ -25,11 +25,13 @@ allOpen {
 extra["springCloudVersion"] = "2021.0.4"
 
 dependencies {
-//    implementation("org.springframework.boot:spring-boot-starter-batch")
-//    testImplementation("org.springframework.batch:spring-batch-test")
+    implementation("org.springframework.boot:spring-boot-starter-batch")
+    testImplementation("org.springframework.batch:spring-batch-test")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
 
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("com.h2database:h2")
 //    kapt("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final")
 
     compileOnly("org.projectlombok:lombok")
@@ -49,6 +51,11 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+
+
+    implementation("org.mapstruct:mapstruct:1.5.2.Final")
+    kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")
+    kaptTest("org.mapstruct:mapstruct-processor:1.5.2.Final")
 }
 
 dependencyManagement {

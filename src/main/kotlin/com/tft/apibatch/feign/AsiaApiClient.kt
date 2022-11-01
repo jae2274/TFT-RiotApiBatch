@@ -23,5 +23,5 @@ interface AsiaApiClient {
     fun callMatch(
         @RequestHeader("X-Riot-Token") xRiotToken: String,
         @PathVariable("matchId") matchId: String
-    ): MatchDTO?
+    ): MatchDTO
 }

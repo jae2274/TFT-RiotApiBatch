@@ -15,8 +15,9 @@ import java.time.LocalDateTime
 data class User
     (
     @Id
-    var summonerId: String,
-    var puuid: String?,
+    val summonerId: String,
+    var puuid: String? = null,
+    var isProcessed: Boolean = false
 )
 {
 
