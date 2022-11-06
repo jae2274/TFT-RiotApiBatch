@@ -11,7 +11,6 @@ import org.mapstruct.factory.Mappers
 
 @Mapper
 interface DeckMapper {
-    fun participantToDeck(entity: Match.Participant, match_id: String): Deck // 3
     companion object {
         val INSTANCE: DeckMapper = Mappers.getMapper(DeckMapper::class.java) // 2
     }

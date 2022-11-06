@@ -7,9 +7,20 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class Match(
     @Id
     val match_id: String,
+    var info: Info? = null,
     var participants: List<Participant>? = null,
     var isProcessed: Boolean = false,
-) {
+): BaseEntity() {
+
+    data class Info(
+        val game_datetime: Long,
+        val game_length: Float,
+        val queue_id: Int,
+        val tft_game_type: String,
+        val tft_set_core_name: String,
+        val tft_set_number: Int,
+    )
+
     data class Participant (
         val gold_left: Int?,
         val last_round: Int?,

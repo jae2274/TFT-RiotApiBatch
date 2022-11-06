@@ -8,7 +8,7 @@ import com.tft.apibatch.feign.dto.LeagueListDTO
 import com.tft.apibatch.feign.dto.MatchDTO
 import com.tft.apibatch.feign.dto.SummonerDTO
 import com.tft.apibatch.mapstructure.DeckMapper
-import com.tft.apibatch.mapstructure.ParticipantMapper
+import com.tft.apibatch.mapstructure.TFTMapper
 import com.tft.apibatch.repository.DeckRepository
 //import com.tft.apibatch.mapstructure.ParticipantMapper
 import com.tft.apibatch.repository.MatchRepository
@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 
 @SpringBootTest
@@ -53,7 +54,7 @@ class FeignTest {
         )
 
         //저장했던 summonerId 가져와서 puuid 수집
-       val users = userRepository.findAllByPuuidIsNull()
+       val users = userRepository.findAllByPuuidIsNull(PageRequest.of(0,1))
 
         val summonerDTO :SummonerDTO = krApiClient.callSummoner(apiToken, users[0].summonerId)
         println(summonerDTO)
@@ -81,13 +82,13 @@ class FeignTest {
         userRepository.save(user);
 
         //수집된 matchId를 통해 실제 경기데이터 수집
-        val matches = matchRepository.findAllByParticipantsIsNull();
+        val matches = matchRepository.findAllByParticipantsIsNull(PageRequest.of(0,1))
 
         val matchDTO : MatchDTO = asiaApiClient.callMatch(apiToken, matches[0].match_id)
         println(matchDTO)
 
         matches[0].participants = matchDTO.info.participants
-            .map { ParticipantMapper.INSTANCE.dtoToEntry(it) }
+            .map { TFTMapper.INSTANCE.participantFromDTO(it) }
 
 
         matchRepository.save(
@@ -98,7 +99,7 @@ class FeignTest {
 
         deckRepository.saveAll(
             matches[0].participants!!
-                .map { DeckMapper.INSTANCE.participantToDeck(it, matches[0].match_id) }
+                .map { TFTMapper.INSTANCE.participantToDeck(it, matches[0].match_id, matches[0].info!!) }
         )
 
         matches[0].isProcessed = true

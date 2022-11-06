@@ -4,17 +4,26 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "deck")
-data class Deck (
+data class Deck  (
     @Id
     val _id: String? = null,
     var match_id: String,
+    var info: Info,
     val gold_left: Int?,
     val last_round: Int?,
     val level: Int?,
     val placement: Int?,
     val traits: List<Trait>?,
     val units: List<Unit>?,
-){
+): BaseEntity() {
+    data class Info(
+        val game_datetime: Long,
+        val game_length: Float,
+        val queue_id: Int,
+        val tft_game_type: String,
+        val tft_set_core_name: String,
+        val tft_set_number: Int,
+    )
     data class Trait (
         val name: String?,
         val num_units: Int?,

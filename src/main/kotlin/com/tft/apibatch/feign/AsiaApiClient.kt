@@ -17,7 +17,7 @@ interface AsiaApiClient {
         @PathVariable("puuid") puuid: String,
         @RequestParam("start") start: Int,
         @RequestParam("count") count: Int
-    ): List<String>?
+    ): List<String>
 
     @RequestMapping(method = [RequestMethod.GET], value = ["/tft/match/v1/matches/{matchId}"])
     fun callMatch(

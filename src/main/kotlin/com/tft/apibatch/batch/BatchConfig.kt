@@ -1,14 +1,11 @@
 package com.tft.apibatch.batch
 
-import com.tft.apibatch.entry.Deck
 import com.tft.apibatch.entry.Match
 import com.tft.apibatch.entry.User
 import com.tft.apibatch.feign.AsiaApiClient
 import com.tft.apibatch.feign.KrApiClient
-import com.tft.apibatch.feign.dto.LeagueListDTO
 import com.tft.apibatch.feign.dto.SummonerDTO
-import com.tft.apibatch.mapstructure.DeckMapper
-import com.tft.apibatch.mapstructure.ParticipantMapper
+import com.tft.apibatch.mapstructure.TFTMapper
 import com.tft.apibatch.repository.DeckRepository
 import com.tft.apibatch.repository.MatchRepository
 import com.tft.apibatch.repository.UserRepository
@@ -16,6 +13,7 @@ import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
+import org.springframework.batch.core.configuration.annotation.JobScope
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.repeat.RepeatStatus
@@ -23,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import kotlin.properties.Delegates
+import org.springframework.data.domain.PageRequest
 
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
@@ -50,27 +48,38 @@ class BatchConfig{
     @Value("\${api-token}")
     lateinit var apiToken : String
 
-    @Value("\${break-time}")
-    val breakTime: Long? = null
 
     @Bean
-    fun job(): Job {
-        return jobBuilderFactory["sendNotificationBeforeClassJob"]
-            .start(collectSummonerId())
-//            .next()
+    fun collectJob(): Job {
+        return jobBuilderFactory["collectJob"]
+            .start(collectSummonerId(1))
+            .next(collectPuuId(Long.MAX_VALUE))
+            .next(collectMatchId(Long.MAX_VALUE))
+            .next(collectMatchInfo(Long.MAX_VALUE))
+            .next(collectDeck(Long.MAX_VALUE))
             .build()
     }
 
     @Bean
-    fun collectSummonerId(): Step {
+    @JobScope
+    fun collectSummonerId(@Value("#{jobParameters[collectSummonerIdCnt]}") collectSummonerIdCnt: Long ): Step {
         return stepBuilderFactory["collectSummonerId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
-                val leagueListDTO : LeagueListDTO = krApiClient.callChallengerLeagues(apiToken)
 
-                userRepository.saveAll(
-                    leagueListDTO.entries
-                        .map { User(it.summonerId) }
-                )
+                for(i in 1 .. collectSummonerIdCnt) {
+                    val userIds = krApiClient.callChallengerLeagues(apiToken)
+                        .entries
+                        .map { it.summonerId }
+
+                    val existedSummonerIds =
+                        userRepository.findAllBySummonerIdInAndPuuidIsNotNull(userIds).map { it.summonerId }
+
+                    val willSaved = userIds.filter { !existedSummonerIds.contains(it) }
+
+                    userRepository.saveAll(
+                        willSaved.map { User(it) }
+                    )
+                }
 
                 RepeatStatus.FINISHED
             }
@@ -78,94 +87,143 @@ class BatchConfig{
     }
 
     @Bean
-    fun collectPuuId(): Step {
+    @JobScope
+    fun collectPuuId(@Value("#{jobParameters[collectPuuIdCnt]}") collectPuuIdCnt: Long ): Step {
         return stepBuilderFactory["collectPuuId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                val users = userRepository.findAllByPuuidIsNull()
+                if(collectPuuIdCnt>0) {
+                    val users = userRepository.findAllByPuuidIsNull(PageRequest.of(0, collectPuuIdCnt.toInt()))
 
-                users.forEach {
-                    val summonerDTO : SummonerDTO = krApiClient.callSummoner(apiToken, it.summonerId)
-                    println(summonerDTO)
+                    var count = 0
+
+                    for (user in users) {
+                        if (count++ >= collectPuuIdCnt)
+                            break
+
+                        val summonerDTO: SummonerDTO = krApiClient.callSummoner(apiToken, user.summonerId)
+                        println(summonerDTO)
+
+                        user.puuid = summonerDTO.puuid
+                        userRepository.save(user)
 
 
-                    it.puuid = summonerDTO.puuid
+                    }
                 }
 
-
-                userRepository.saveAll(users)
                 RepeatStatus.FINISHED
             }
             .build()
     }
 
     @Bean
-    fun collectMatchId(): Step {
+    @JobScope
+    fun collectMatchId( @Value("#{jobParameters[collectMatchIdCnt]}") collectMatchIdCnt: Long ): Step {
         return stepBuilderFactory["collectMatchId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                val users = userRepository.findAllByPuuidIsNotNullAndIsProcessedFalse()
-
-                users.forEach {
-                    val callMatches : List<String>? = asiaApiClient.callMatches(apiToken, it!!.puuid!!, 0, 100);
-
-                    matchRepository.saveAll(
-                        callMatches!!
-                            .map { Match(it) }
+                if(collectMatchIdCnt>0) {
+                    val users = userRepository.findAllByPuuidIsNotNullAndIsProcessedFalse(
+                        PageRequest.of(
+                            0,
+                            collectMatchIdCnt.toInt()
+                        )
                     )
-                    it.isProcessed = true
+
+                    var count = 0
+
+                    for (user in users) {
+                        if (count++ >= collectMatchIdCnt)
+                            break
+
+                        val callMatches = asiaApiClient.callMatches(apiToken, user!!.puuid!!, 0, 100)
+                        saveMatcheIds(callMatches)
+
+                        user.isProcessed = true
+                        userRepository.save(user)
+                    }
                 }
 
-                userRepository.saveAll(users)
+                RepeatStatus.FINISHED
+            }
+            .build()
+    }
+
+    private fun saveMatcheIds(matchIds: Collection<String>){
+        val existedMatchIds = matchRepository.findAllById(matchIds).map { it.match_id }
+
+        val willSaved = matchIds.filter { !existedMatchIds.contains(it) }
+
+        matchRepository.saveAll(
+            willSaved
+                .map { Match(it) }
+        )
+    }
+
+    @Bean
+    @JobScope
+    fun collectMatchInfo( @Value("#{jobParameters[collectMatchInfoCnt]}") collectMatchInfoCnt: Long ): Step {
+        return stepBuilderFactory["collectMatchInfo"]
+            .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
+
+                if(collectMatchInfoCnt>0) {
+                    val matches = matchRepository.findAllByParticipantsIsNull(PageRequest.of(0, collectMatchInfoCnt.toInt()))
+
+                    var count = 0
+
+                    for (match in matches) {
+                        if (count++ >= collectMatchInfoCnt)
+                            break
+
+                        val matchDTO = asiaApiClient.callMatch(apiToken, match.match_id)
+
+                        match.participants = matchDTO.info.participants
+                            .map { TFTMapper.INSTANCE.participantFromDTO(it) }
+
+                        match.info = TFTMapper.INSTANCE.infoFromDTO(matchDTO.info)
+
+                        matchRepository.save(match)
+                    }
+                }
+
                 RepeatStatus.FINISHED
             }
             .build()
     }
 
     @Bean
-    fun collectMatchInfo(): Step {
-        return stepBuilderFactory["collectMatchId"]
+    @JobScope
+    fun collectDeck(@Value("#{jobParameters[collectDeckCnt]}") collectDeckCnt: Long ): Step {
+        return stepBuilderFactory["collectDeck"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                val matches = matchRepository.findAllByParticipantsIsNull();
+                if(collectDeckCnt>0) {
+                    val matches = matchRepository.findAllByParticipantsIsNotNullAndIsProcessedFalse(
+                        PageRequest.of(
+                            0,
+                            collectDeckCnt.toInt()
+                        )
+                    )
 
-                matches.forEach {
-                    Thread.sleep(breakTime!!)
-                    val matchDTO = asiaApiClient.callMatch(apiToken, it.match_id)
+                    var count = 0
 
-                    it.participants = matchDTO.info.participants
-                        .map { ParticipantMapper.INSTANCE.dtoToEntry(it) }
+                    for (match in matches) {
+                        if (count++ >= collectDeckCnt)
+                            break
+
+                        val decks = match.participants!!
+                            .map { TFTMapper.INSTANCE.participantToDeck(it, match.match_id, match.info!!) }
+
+                        deckRepository.saveAll(decks)
+
+                        match.isProcessed = true
+                        matchRepository.save(match)
+                    }
                 }
-
-                matchRepository.saveAll(matches)
 
                 RepeatStatus.FINISHED
             }
             .build()
     }
-
-    @Bean
-    fun collectDecks(): Step {
-        return stepBuilderFactory["collectDecks"]
-            .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
-
-                val matches = matchRepository.findAllByParticipantsIsNotNullAndIsProcessedFalse();
-
-                val deckList = mutableListOf<Deck>()
-                for (match in matches) {
-                    val decks = match.participants!!
-                        .map { DeckMapper.INSTANCE.participantToDeck(it, match.match_id) }
-                    deckList.addAll(decks)
-                    match.isProcessed = true
-                }
-
-                matchRepository.saveAll(matches)
-                deckRepository.saveAll(deckList);
-
-                RepeatStatus.FINISHED
-            }
-            .build()
-    }
-
 
 }
