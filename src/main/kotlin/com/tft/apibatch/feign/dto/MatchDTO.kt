@@ -1,21 +1,17 @@
 package com.tft.apibatch.feign.dto
 
 
-import lombok.*
-
-
-data class MatchDTO (
+data class MatchDTO(
     val metadata: MetadataDTO,
     val info: InfoDTO,
-)
-{
-    data class MetadataDTO (
+) {
+    data class MetadataDTO(
         var data_version: String?,
         var match_id: String?,
         var participants: List<String>,
     )
-    
-    data class InfoDTO (
+
+    data class InfoDTO(
         var game_datetime: Long?,
         var game_length: Float?,
         var game_version: String?,
@@ -26,7 +22,7 @@ data class MatchDTO (
         val tft_set_number: Int,
     )
 
-    data class ParticipantDTO (
+    data class ParticipantDTO(
         var gold_left: Int?,
         var last_round: Int?,
         var level: Int?,
@@ -38,16 +34,16 @@ data class MatchDTO (
         var traits: List<TraitDTO>?,
         var units: List<UnitDTO>?,
     )
-    
-    data class TraitDTO (
+
+    data class TraitDTO(
         var name: String?,
         var num_units: Int?,
         var style: Int?,
         var tier_current: Int?,
         var tier_total: Int?,
     )
-    
-    data class UnitDTO (
+
+    data class UnitDTO(
         var items: List<Int>?,
         var itemNames: List<String>?,
         var character_id: String?,

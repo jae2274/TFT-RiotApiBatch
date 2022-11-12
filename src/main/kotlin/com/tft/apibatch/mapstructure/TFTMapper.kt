@@ -1,6 +1,7 @@
 package com.tft.apibatch.mapstructure
 
 import com.tft.apibatch.entry.Deck
+import com.tft.apibatch.entry.Info
 import com.tft.apibatch.entry.Match
 import com.tft.apibatch.feign.dto.MatchDTO
 import org.mapstruct.Mapper
@@ -15,8 +16,9 @@ interface TFTMapper {
 //    fun entryToDTO(entity: Match.Participant): MatchDTO.ParticipantDTO // 3
 
     @Mapping(target = "info", source = "info")
-    fun participantToDeck(entity: Match.Participant, match_id: String, info : Match.Info): Deck // 3
-    fun deckInfoFromParticipantInfo(info: Match.Info): Deck.Info
+    fun participantToDeck(entity: Match.Participant, match_id: String, info: Match.Info): Deck // 3
+    fun deckInfoFromParticipantInfo(info: Match.Info): Info
+
     companion object {
         val INSTANCE: TFTMapper = Mappers.getMapper(TFTMapper::class.java) // 2
     }

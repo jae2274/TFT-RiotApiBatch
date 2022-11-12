@@ -1,16 +1,19 @@
 package com.tft.apibatch.entry
 
 
-import org.springframework.data.annotation.Id
+import com.querydsl.core.annotations.QueryEntity
 import org.springframework.data.mongodb.core.mapping.Document
+import javax.persistence.Entity
+import javax.persistence.Id
 
 
-//@QueryEntity
+@Entity
+@QueryEntity
 @Document(collection = "user")
 data class User
     (
     @Id
-    val summonerId: String,
+    var summonerId: String = "",
     var puuid: String? = null,
     var isProcessed: Boolean = false,
-): BaseEntity()
+) : BaseEntity()

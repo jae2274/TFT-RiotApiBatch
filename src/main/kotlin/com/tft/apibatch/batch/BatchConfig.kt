@@ -26,27 +26,31 @@ import org.springframework.data.domain.PageRequest
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration
-class BatchConfig{
+class BatchConfig {
 
     @Autowired
     lateinit var jobBuilderFactory: JobBuilderFactory
+
     @Autowired
     lateinit var stepBuilderFactory: StepBuilderFactory
 
     @Autowired
-    lateinit var krApiClient : KrApiClient
+    lateinit var krApiClient: KrApiClient
+
     @Autowired
     lateinit var asiaApiClient: AsiaApiClient
 
     @Autowired
     lateinit var userRepository: UserRepository
+
     @Autowired
     lateinit var matchRepository: MatchRepository
+
     @Autowired
     lateinit var deckRepository: DeckRepository
 
     @Value("\${api-token}")
-    lateinit var apiToken : String
+    lateinit var apiToken: String
 
 
     @Bean
@@ -62,11 +66,11 @@ class BatchConfig{
 
     @Bean
     @JobScope
-    fun collectSummonerId(@Value("#{jobParameters[collectSummonerIdCnt]}") collectSummonerIdCnt: Long ): Step {
+    fun collectSummonerId(@Value("#{jobParameters[collectSummonerIdCnt]}") collectSummonerIdCnt: Long): Step {
         return stepBuilderFactory["collectSummonerId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                for(i in 1 .. collectSummonerIdCnt) {
+                for (i in 1..collectSummonerIdCnt) {
                     val userIds = krApiClient.callChallengerLeagues(apiToken)
                         .entries
                         .map { it.summonerId }
@@ -88,18 +92,14 @@ class BatchConfig{
 
     @Bean
     @JobScope
-    fun collectPuuId(@Value("#{jobParameters[collectPuuIdCnt]}") collectPuuIdCnt: Long ): Step {
+    fun collectPuuId(@Value("#{jobParameters[collectPuuIdCnt]}") collectPuuIdCnt: Long): Step {
         return stepBuilderFactory["collectPuuId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                if(collectPuuIdCnt>0) {
+                if (collectPuuIdCnt > 0) {
                     val users = userRepository.findAllByPuuidIsNull(PageRequest.of(0, collectPuuIdCnt.toInt()))
 
-                    var count = 0
-
                     for (user in users) {
-                        if (count++ >= collectPuuIdCnt)
-                            break
 
                         val summonerDTO: SummonerDTO = krApiClient.callSummoner(apiToken, user.summonerId)
                         println(summonerDTO)
@@ -118,11 +118,11 @@ class BatchConfig{
 
     @Bean
     @JobScope
-    fun collectMatchId( @Value("#{jobParameters[collectMatchIdCnt]}") collectMatchIdCnt: Long ): Step {
+    fun collectMatchId(@Value("#{jobParameters[collectMatchIdCnt]}") collectMatchIdCnt: Long): Step {
         return stepBuilderFactory["collectMatchId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                if(collectMatchIdCnt>0) {
+                if (collectMatchIdCnt > 0) {
                     val users = userRepository.findAllByPuuidIsNotNullAndIsProcessedFalse(
                         PageRequest.of(
                             0,
@@ -130,11 +130,7 @@ class BatchConfig{
                         )
                     )
 
-                    var count = 0
-
                     for (user in users) {
-                        if (count++ >= collectMatchIdCnt)
-                            break
 
                         val callMatches = asiaApiClient.callMatches(apiToken, user!!.puuid!!, 0, 100)
                         saveMatcheIds(callMatches)
@@ -149,7 +145,7 @@ class BatchConfig{
             .build()
     }
 
-    private fun saveMatcheIds(matchIds: Collection<String>){
+    private fun saveMatcheIds(matchIds: Collection<String>) {
         val existedMatchIds = matchRepository.findAllById(matchIds).map { it.match_id }
 
         val willSaved = matchIds.filter { !existedMatchIds.contains(it) }
@@ -162,18 +158,15 @@ class BatchConfig{
 
     @Bean
     @JobScope
-    fun collectMatchInfo( @Value("#{jobParameters[collectMatchInfoCnt]}") collectMatchInfoCnt: Long ): Step {
+    fun collectMatchInfo(@Value("#{jobParameters[collectMatchInfoCnt]}") collectMatchInfoCnt: Long): Step {
         return stepBuilderFactory["collectMatchInfo"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                if(collectMatchInfoCnt>0) {
-                    val matches = matchRepository.findAllByParticipantsIsNull(PageRequest.of(0, collectMatchInfoCnt.toInt()))
-
-                    var count = 0
+                if (collectMatchInfoCnt > 0) {
+                    val matches =
+                        matchRepository.findAllByParticipantsIsNull(PageRequest.of(0, collectMatchInfoCnt.toInt()))
 
                     for (match in matches) {
-                        if (count++ >= collectMatchInfoCnt)
-                            break
 
                         val matchDTO = asiaApiClient.callMatch(apiToken, match.match_id)
 
@@ -193,11 +186,11 @@ class BatchConfig{
 
     @Bean
     @JobScope
-    fun collectDeck(@Value("#{jobParameters[collectDeckCnt]}") collectDeckCnt: Long ): Step {
+    fun collectDeck(@Value("#{jobParameters[collectDeckCnt]}") collectDeckCnt: Long): Step {
         return stepBuilderFactory["collectDeck"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                if(collectDeckCnt>0) {
+                if (collectDeckCnt > 0) {
                     val matches = matchRepository.findAllByParticipantsIsNotNullAndIsProcessedFalse(
                         PageRequest.of(
                             0,
@@ -205,11 +198,7 @@ class BatchConfig{
                         )
                     )
 
-                    var count = 0
-
                     for (match in matches) {
-                        if (count++ >= collectDeckCnt)
-                            break
 
                         val decks = match.participants!!
                             .map { TFTMapper.INSTANCE.participantToDeck(it, match.match_id, match.info!!) }

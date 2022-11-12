@@ -1,20 +1,15 @@
 package com.tft.apibatch.feign.dto
 
-import com.tft.apibatch.feign.dto.LeagueListDTO.LeagueItemDTO
-import com.tft.apibatch.feign.dto.LeagueListDTO.MiniSeriesDTO
-import lombok.*
 
-
-data class LeagueListDTO (
+data class LeagueListDTO(
     val leagueId: String?,
     val entries: List<LeagueItemDTO>,
     val tier: String?,
     val name: String?,
     val queue: String?,
-)
-{
+) {
 
-    data class LeagueItemDTO (
+    data class LeagueItemDTO(
         val freshBlood: Boolean?,
         val wins: Int?,
         val summonerName: String?,
@@ -29,7 +24,7 @@ data class LeagueListDTO (
     )
 
 
-    data class MiniSeriesDTO (
+    data class MiniSeriesDTO(
         val losses: Int?,
         val progress: String?,
         val target: Int?,
