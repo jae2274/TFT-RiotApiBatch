@@ -5,12 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class DeckRepositoryTest {
+class RepositoryTest {
     @Autowired
     private lateinit var deckRepository: DeckRepository
 
+    @Autowired
+    private lateinit var matchRepository: MatchRepository
+
     @Test
-    fun testQuerydsl() {
+    fun findAllByCharacterId() {
 
         val page = deckRepository.findAllByCharacterId("TFT7_DragonGreen")
 
@@ -18,4 +21,12 @@ class DeckRepositoryTest {
             println(deck)
         }
     }
+
+//    @Test
+//    fun testQuerydsl() {
+//
+//        val mostRecentMatch = matchRepository.findTop1ByOrderByInfo_Game_datetimeDesc()
+//
+//        println(mostRecentMatch)
+//    }
 }

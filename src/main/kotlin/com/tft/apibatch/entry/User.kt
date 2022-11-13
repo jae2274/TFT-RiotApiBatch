@@ -2,9 +2,9 @@ package com.tft.apibatch.entry
 
 
 import com.querydsl.core.annotations.QueryEntity
+import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import javax.persistence.Entity
-import javax.persistence.Id
 
 
 @Entity

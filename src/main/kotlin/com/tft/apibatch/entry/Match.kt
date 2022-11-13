@@ -1,54 +1,66 @@
 package com.tft.apibatch.entry
 
+import com.querydsl.core.annotations.QueryEntity
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import javax.persistence.Entity
 
+@Entity
+@QueryEntity
 @Document(collection = "match")
 data class Match(
     @Id
-    val match_id: String,
+    val match_id: String = "",
     var info: Info? = null,
     var participants: List<Participant>? = null,
     var isProcessed: Boolean = false,
-): BaseEntity() {
+) : BaseEntity() {
 
+    @Entity
+    @QueryEntity
     data class Info(
-        val game_datetime: Long,
-        val game_length: Float,
-        val queue_id: Int,
-        val tft_game_type: String,
-        val tft_set_core_name: String,
-        val tft_set_number: Int,
+        var game_datetime: Long? = null,
+        var game_length: Float? = null,
+        var queue_id: Int? = null,
+        var tft_game_type: String? = null,
+        var tft_set_core_name: String? = null,
+        var tft_set_number: Int? = null,
     )
 
-    data class Participant (
-        val gold_left: Int?,
-        val last_round: Int?,
-        val level: Int?,
-        val placement: Int?,
-        val players_eliminated: Int?,
-        val puuid: String?,
-        val time_eliminated: Float?,
-        val total_damage_to_players: Int?,
-        val traits: List<Trait>?,
-        val units: List<Unit>?,
+    @Entity
+    @QueryEntity
+    data class Participant(
+        var gold_left: Int? = null,
+        var last_round: Int? = null,
+        var level: Int? = null,
+        var placement: Int? = null,
+        var players_eliminated: Int? = null,
+        var puuid: String? = null,
+        var time_eliminated: Float? = null,
+        var total_damage_to_players: Int? = null,
+        var traits: List<Trait>? = null,
+        var units: List<Unit>? = null,
     )
 
-    data class Trait (
-        val name: String?,
-        val num_units: Int?,
-        val style: Int?,
-        val tier_current: Int?,
-        val tier_total: Int?,
+    @Entity
+    @QueryEntity
+    data class Trait(
+        var name: String? = null,
+        var num_units: Int? = null,
+        var style: Int? = null,
+        var tier_current: Int? = null,
+        var tier_total: Int? = null,
     )
 
-    data class Unit (
-        val items: List<Int>?,
-        val itemNames: List<String>?,
-        val character_id: String?,
-        val chosen: String?,
-        val name: String?,
-        val rarity: Int?,
-        val tier: Int?,
+    @Entity
+    @QueryEntity
+    data class Unit(
+        var items: List<Int>? = null,
+        var itemNames: List<String>? = null,
+        var character_id: String? = null,
+        var chosen: String? = null,
+        var name: String? = null,
+        var rarity: Int? = null,
+        var tier: Int? = null,
     )
 }
