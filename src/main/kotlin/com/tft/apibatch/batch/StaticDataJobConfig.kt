@@ -3,7 +3,7 @@ package com.tft.apibatch.batch
 import com.tft.apibatch.entry.CharacterSet
 import com.tft.apibatch.entry.Deck
 import com.tft.apibatch.entry.ItemSet
-import com.tft.apibatch.entry.QDeck
+import com.tft.apibatch.entry.QDeck.deck
 import com.tft.apibatch.repository.CharacterSetRepository
 import com.tft.apibatch.repository.DeckRepository
 import com.tft.apibatch.repository.ItemSetRepository
@@ -74,7 +74,9 @@ class StaticDataJobConfig {
             .build()
     }
 
-    private val TFT_SEASON_FIELD = "${QDeck.deck.info.tft_set_core_name}".removePrefix("${QDeck.deck}.")
+    private val TFT_SEASON_FIELD = "${deck.info.tft_set_core_name}".removePrefix("${deck}.")
+    private val TFT_ITEM_NAMES_FIELD = "${deck.units.metadata.name}.${deck.units.any().itemNames.metadata.name}"
+    private val TFT_CHARACTER_FIELD = "${deck.units.metadata.name}.${deck.units.any().character_id.metadata.name}"
 
     fun findItemSet(season: String): List<String> {
 
@@ -85,7 +87,7 @@ class StaticDataJobConfig {
         )
 
         //TODO : 추후 units.itemNames 하드코딩을 제거할 수 있는 방법을 고민해보자
-        return mongoTemplate.findDistinct(query, "units.itemNames", Deck::class.java, String::class.java)
+        return mongoTemplate.findDistinct(query, TFT_ITEM_NAMES_FIELD, Deck::class.java, String::class.java)
     }
 
     fun findCharacterSet(season: String): List<String> {
@@ -97,6 +99,6 @@ class StaticDataJobConfig {
         )
 
         //TODO : 추후 units.character_id 하드코딩을 제거할 수 있는 방법을 고민해보자
-        return mongoTemplate.findDistinct(query, "units.character_id", Deck::class.java, String::class.java)
+        return mongoTemplate.findDistinct(query, TFT_CHARACTER_FIELD, Deck::class.java, String::class.java)
     }
 }
