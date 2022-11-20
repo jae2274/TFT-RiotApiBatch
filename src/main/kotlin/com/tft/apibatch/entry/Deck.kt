@@ -3,7 +3,6 @@ package com.tft.apibatch.entry
 import com.querydsl.core.annotations.QueryEntity
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.data.mongodb.core.mapping.Field
 import javax.persistence.Entity
 
 @Entity
@@ -13,15 +12,12 @@ data class Deck(
     @Id
     var _id: String? = null,
     var match_id: String = "",
-    @Field(name = "info")
     var info: Info? = null,
     var gold_left: Int? = null,
     var last_round: Int? = null,
     var level: Int? = null,
     var placement: Int? = null,
-    @Field(name = "traits")
     var traits: List<Trait>? = null,
-    @Field(name = "units")
     var units: List<Unit>? = null,
 ) : BaseEntity()
 

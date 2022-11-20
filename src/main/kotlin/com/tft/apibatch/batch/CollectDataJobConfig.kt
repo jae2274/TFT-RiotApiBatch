@@ -26,7 +26,7 @@ import org.springframework.data.domain.PageRequest
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration
-class BatchConfig {
+class CollectDataJobConfig {
 
     @Autowired
     lateinit var jobBuilderFactory: JobBuilderFactory
@@ -53,7 +53,7 @@ class BatchConfig {
     lateinit var apiToken: String
 
 
-    @Bean
+    @Bean(name = ["collectJob"])
     fun collectJob(): Job {
         return jobBuilderFactory["collectJob"]
             .start(collectSummonerId(1))
@@ -66,11 +66,17 @@ class BatchConfig {
 
     @Bean
     @JobScope
-    fun collectSummonerId(@Value("#{jobParameters[collectSummonerIdCnt]}") collectSummonerIdCnt: Long): Step {
+    fun collectSummonerId(@Value("#{jobParameters[willSavedSummonerIdCnt]}") willSavedSummonerIdCnt: Long): Step {
         return stepBuilderFactory["collectSummonerId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                for (i in 1..collectSummonerIdCnt) {
+                var totalCount = 0;
+
+                for (i in 1..100) {
+                    if (totalCount >= willSavedSummonerIdCnt) {
+                        break
+                    }
+
                     val userIds = krApiClient.callChallengerLeagues(apiToken)
                         .entries
                         .map { it.summonerId }
@@ -78,11 +84,16 @@ class BatchConfig {
                     val existedSummonerIds =
                         userRepository.findAllBySummonerIdInAndPuuidIsNotNull(userIds).map { it.summonerId }
 
-                    val willSaved = userIds.filter { !existedSummonerIds.contains(it) }
+                    var willSaved = userIds.filter { !existedSummonerIds.contains(it) }
+
+                    if (willSavedSummonerIdCnt - totalCount < willSaved.size) {
+                        willSaved = willSaved.subList(0, (willSavedSummonerIdCnt - totalCount).toInt())
+                    }
 
                     userRepository.saveAll(
                         willSaved.map { User(it) }
                     )
+                    totalCount += willSaved.size
                 }
 
                 RepeatStatus.FINISHED
@@ -92,12 +103,12 @@ class BatchConfig {
 
     @Bean
     @JobScope
-    fun collectPuuId(@Value("#{jobParameters[collectPuuIdCnt]}") collectPuuIdCnt: Long): Step {
+    fun collectPuuId(@Value("#{jobParameters[willUpdatedPuuIdCnt]}") willUpdatedPuuIdCnt: Long): Step {
         return stepBuilderFactory["collectPuuId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                if (collectPuuIdCnt > 0) {
-                    val users = userRepository.findAllByPuuidIsNull(PageRequest.of(0, collectPuuIdCnt.toInt()))
+                if (willUpdatedPuuIdCnt > 0) {
+                    val users = userRepository.findAllByPuuidIsNull(PageRequest.of(0, willUpdatedPuuIdCnt.toInt()))
 
                     for (user in users) {
 
@@ -106,8 +117,6 @@ class BatchConfig {
 
                         user.puuid = summonerDTO.puuid
                         userRepository.save(user)
-
-
                     }
                 }
 
@@ -118,22 +127,37 @@ class BatchConfig {
 
     @Bean
     @JobScope
-    fun collectMatchId(@Value("#{jobParameters[collectMatchIdCnt]}") collectMatchIdCnt: Long): Step {
+    fun collectMatchId(@Value("#{jobParameters[willSavedMatchCnt]}") willSavedMatchCnt: Long): Step {
         return stepBuilderFactory["collectMatchId"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                if (collectMatchIdCnt > 0) {
-                    val users = userRepository.findAllByPuuidIsNotNullAndIsProcessedFalse(
-                        PageRequest.of(
-                            0,
-                            collectMatchIdCnt.toInt()
-                        )
-                    )
+                if (willSavedMatchCnt > 0) {
+                    val users = userRepository.findAllByPuuidIsNotNullAndIsProcessedFalse()
+
+                    var totalCount = 0
 
                     for (user in users) {
+                        if (totalCount >= willSavedMatchCnt) {
+                            break
+                        }
 
-                        val callMatches = asiaApiClient.callMatches(apiToken, user!!.puuid!!, 0, 100)
-                        saveMatcheIds(callMatches)
+                        val puuid = checkNotNull(user.puuid) { "puuid is null. match_id: ${user.summonerId}" }
+
+                        val callMatches = asiaApiClient.callMatches(apiToken, puuid, 0, 4)
+
+                        val existedMatchIds = matchRepository.findAllById(callMatches).map { it.match_id }
+
+                        var willSaved = callMatches.filter { !existedMatchIds.contains(it) }
+
+                        if (willSavedMatchCnt - totalCount < willSaved.size) {
+                            willSaved = willSaved.subList(0, (willSavedMatchCnt - totalCount).toInt())
+                        }
+
+                        matchRepository.saveAll(
+                            willSaved
+                                .map { Match(it) }
+                        )
+                        totalCount += willSaved.size
 
                         user.isProcessed = true
                         userRepository.save(user)
@@ -145,38 +169,26 @@ class BatchConfig {
             .build()
     }
 
-    private fun saveMatcheIds(matchIds: Collection<String>) {
-        val existedMatchIds = matchRepository.findAllById(matchIds).map { it.match_id }
-
-        val willSaved = matchIds.filter { !existedMatchIds.contains(it) }
-
-        matchRepository.saveAll(
-            willSaved
-                .map { Match(it) }
-        )
-    }
-
     @Bean
     @JobScope
-    fun collectMatchInfo(@Value("#{jobParameters[collectMatchInfoCnt]}") collectMatchInfoCnt: Long): Step {
+    fun collectMatchInfo(@Value("#{jobParameters[willUpdatedMatchCnt]}") willUpdatedMatchCnt: Long): Step {
         return stepBuilderFactory["collectMatchInfo"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                if (collectMatchInfoCnt > 0) {
-                    val matches =
-                        matchRepository.findAllByParticipantsIsNull(PageRequest.of(0, collectMatchInfoCnt.toInt()))
+                if (willUpdatedMatchCnt > 0) {
+                    val matches = matchRepository.findForMappingParticipants(willUpdatedMatchCnt.toInt())
 
-                    for (match in matches) {
-
+                    val attachedmatches = matches.map { match ->
                         val matchDTO = asiaApiClient.callMatch(apiToken, match.match_id)
 
                         match.participants = matchDTO.info.participants
                             .map { TFTMapper.INSTANCE.participantFromDTO(it) }
 
                         match.info = TFTMapper.INSTANCE.infoFromDTO(matchDTO.info)
-
-                        matchRepository.save(match)
+                        match
                     }
+
+                    matchRepository.saveAll(attachedmatches)
                 }
 
                 RepeatStatus.FINISHED
@@ -186,22 +198,20 @@ class BatchConfig {
 
     @Bean
     @JobScope
-    fun collectDeck(@Value("#{jobParameters[collectDeckCnt]}") collectDeckCnt: Long): Step {
+    fun collectDeck(@Value("#{jobParameters[willConvertedMatchCnt]}") willConvertedMatchCnt: Long): Step {
         return stepBuilderFactory["collectDeck"]
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
-                if (collectDeckCnt > 0) {
-                    val matches = matchRepository.findAllByParticipantsIsNotNullAndIsProcessedFalse(
-                        PageRequest.of(
-                            0,
-                            collectDeckCnt.toInt()
-                        )
-                    )
+                if (willConvertedMatchCnt > 0) {
+                    val matches = matchRepository.findForExtractingDecks(willConvertedMatchCnt.toInt())
 
                     for (match in matches) {
+                        val participants =
+                            checkNotNull(match.participants) { "participants is null. match_id: ${match.match_id}" }
+                        val info = checkNotNull(match.info) { "info is null. match_id: ${match.match_id}" }
 
-                        val decks = match.participants!!
-                            .map { TFTMapper.INSTANCE.participantToDeck(it, match.match_id, match.info!!) }
+                        val decks = participants
+                            .map { TFTMapper.INSTANCE.participantToDeck(it, match.match_id, info) }
 
                         deckRepository.saveAll(decks)
 

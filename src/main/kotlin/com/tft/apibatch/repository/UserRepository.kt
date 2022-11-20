@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface UserRepository : MongoRepository<User, String>, QuerydslPredicateExecutor<User> {
     fun findAllByPuuidIsNull(pageable: Pageable): List<User>
-    fun findAllByPuuidIsNotNullAndIsProcessedFalse(pageable: Pageable): List<User>
+    fun findAllByPuuidIsNotNullAndIsProcessedFalse(): List<User>
     fun findAllBySummonerIdInAndPuuidIsNotNull(summonerId: List<String>): List<User>
 }
