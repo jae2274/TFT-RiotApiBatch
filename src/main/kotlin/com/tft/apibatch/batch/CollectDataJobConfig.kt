@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.PageRequest
+import kotlin.math.ceil
 
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
@@ -143,7 +144,7 @@ class CollectDataJobConfig {
 
                         val puuid = checkNotNull(user.puuid) { "puuid is null. match_id: ${user.summonerId}" }
 
-                        val callMatches = asiaApiClient.callMatches(apiToken, puuid, 0, 4)
+                        val callMatches = asiaApiClient.callMatches(apiToken, puuid, 0, 200)
 
                         val existedMatchIds = matchRepository.findAllById(callMatches).map { it.match_id }
 
@@ -203,20 +204,30 @@ class CollectDataJobConfig {
             .tasklet { contribution: StepContribution?, chunkContext: ChunkContext? ->
 
                 if (willConvertedMatchCnt > 0) {
-                    val matches = matchRepository.findForExtractingDecks(willConvertedMatchCnt.toInt())
+                    val pageSize = 100
 
-                    for (match in matches) {
-                        val participants =
-                            checkNotNull(match.participants) { "participants is null. match_id: ${match.match_id}" }
-                        val info = checkNotNull(match.info) { "info is null. match_id: ${match.match_id}" }
+                    val pageCount = ceil(willConvertedMatchCnt / pageSize.toDouble()).toInt()
 
-                        val decks = participants
-                            .map { TFTMapper.INSTANCE.participantToDeck(it, match.match_id, info) }
+                    for (pageNum in 0..pageCount) {
+                        val matches = matchRepository.findForExtractingDecks(PageRequest.of(0, pageSize))
 
-                        deckRepository.saveAll(decks)
+                        if (matches.isEmpty())
+                            break
 
-                        match.isProcessed = true
-                        matchRepository.save(match)
+                        for (match in matches) {
+                            val participants =
+                                checkNotNull(match.participants) { "participants is null. match_id: ${match.match_id}" }
+                            val info = checkNotNull(match.info) { "info is null. match_id: ${match.match_id}" }
+
+                            val decks = participants
+                                .map { TFTMapper.INSTANCE.participantToDeck(it, match.match_id, info) }
+
+                            deckRepository.saveAll(decks)
+
+                            match.isProcessed = true
+                            matchRepository.save(match)
+
+                        }
                     }
                 }
 

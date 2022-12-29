@@ -4,9 +4,11 @@ import com.tft.apibatch.entry.CharacterSet
 import com.tft.apibatch.entry.Deck
 import com.tft.apibatch.entry.ItemSet
 import com.tft.apibatch.entry.QDeck.deck
+import com.tft.apibatch.entry.SynergySet
 import com.tft.apibatch.repository.CharacterSetRepository
 import com.tft.apibatch.repository.DeckRepository
 import com.tft.apibatch.repository.ItemSetRepository
+import com.tft.apibatch.repository.SynergySetRepository
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.StepContribution
@@ -44,6 +46,9 @@ class StaticDataJobConfig {
     lateinit var characterSetRepository: CharacterSetRepository
 
     @Autowired
+    lateinit var synergySetRepository: SynergySetRepository
+
+    @Autowired
     private lateinit var mongoTemplate: MongoTemplate
 
 
@@ -64,10 +69,13 @@ class StaticDataJobConfig {
 
                 val itemSet = findItemSet(recentSeason)
                 val characterSet = findCharacterSet(recentSeason)
+                val synergySet = findSynergySet(recentSeason)
 
                 itemSetRepository.save(ItemSet(recentSeason, itemSet))
 
                 characterSetRepository.save(CharacterSet(recentSeason, characterSet))
+
+                synergySetRepository.save(SynergySet(recentSeason, synergySet))
 
                 RepeatStatus.FINISHED
             }
@@ -77,6 +85,7 @@ class StaticDataJobConfig {
     private val TFT_SEASON_FIELD = "${deck.info.tft_set_core_name}".removePrefix("${deck}.")
     private val TFT_ITEM_NAMES_FIELD = "${deck.units.metadata.name}.${deck.units.any().itemNames.metadata.name}"
     private val TFT_CHARACTER_FIELD = "${deck.units.metadata.name}.${deck.units.any().character_id.metadata.name}"
+    private val TFT_SYNERGY_FIELD = "${deck.traits.metadata.name}.${deck.traits.any().name.metadata.name}"
 
     fun findItemSet(season: String): List<String> {
 
@@ -100,5 +109,17 @@ class StaticDataJobConfig {
 
         //TODO : 추후 units.character_id 하드코딩을 제거할 수 있는 방법을 고민해보자
         return mongoTemplate.findDistinct(query, TFT_CHARACTER_FIELD, Deck::class.java, String::class.java)
+    }
+
+    fun findSynergySet(season: String): List<String> {
+
+        val query = Query()
+        query.addCriteria(
+            Criteria.where(TFT_SEASON_FIELD)
+                .isEqualTo(season)
+        )
+
+        //TODO : 추후 units.character_id 하드코딩을 제거할 수 있는 방법을 고민해보자
+        return mongoTemplate.findDistinct(query, TFT_SYNERGY_FIELD, Deck::class.java, String::class.java)
     }
 }

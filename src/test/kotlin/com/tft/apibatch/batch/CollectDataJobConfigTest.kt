@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.springframework.batch.core.ExitStatus
 import org.springframework.batch.core.Job
+import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.JobParametersBuilder
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,16 +31,18 @@ internal class CollectDataJobConfigTest {
     @Order(1)
     fun testCollectJob() {
         val jobParameters = JobParametersBuilder()
-            .addLong("willSavedSummonerIdCnt", 10)
-            .addLong("willUpdatedPuuIdCnt", 10)
-            .addLong("willSavedMatchCnt", 100)
-            .addLong("willUpdatedMatchCnt", 100)
-            .addLong("willConvertedMatchCnt", 100)
+            .addLong("willSavedSummonerIdCnt", 0)
+            .addLong("willUpdatedPuuIdCnt", 0)
+            .addLong("willSavedMatchCnt", 0)
+            .addLong("willUpdatedMatchCnt", 0)
+            .addLong("willConvertedMatchCnt", 100000)
             .toJobParameters()
 
-        val execution = jobLauncher.run(collectJob, jobParameters)
+        var execution = jobLauncher.run(collectJob, jobParameters)
         Assertions.assertThat(execution.exitStatus).isEqualTo(ExitStatus.COMPLETED)
 
+        execution = jobLauncher.run(staticDataJob, JobParameters())
+        Assertions.assertThat(execution.exitStatus).isEqualTo(ExitStatus.COMPLETED)
     }
 
 

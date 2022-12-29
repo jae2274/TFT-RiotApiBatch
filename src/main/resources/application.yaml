@@ -1,4 +1,4 @@
-break-time: 1500
+break-time: 2000
 
 mongodb:
   uri: mongodb://localhost:27017
@@ -43,7 +43,7 @@ spring:
     console:
       enabled: true
       path: /h2-console
-      
+
 logging:
   level:
     org:

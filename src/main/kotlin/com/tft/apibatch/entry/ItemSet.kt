@@ -11,5 +11,6 @@ import javax.persistence.Entity
 data class ItemSet(
     @Id
     var season: String = "",
-    var items: List<String> = listOf()
+    var items: List<String> = listOf(),
+    var isProcessed: Boolean = false,
 )

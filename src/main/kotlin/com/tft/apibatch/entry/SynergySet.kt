@@ -7,10 +7,10 @@ import javax.persistence.Entity
 
 @Entity
 @QueryEntity
-@Document(collection = "characterSet")
-data class CharacterSet(
+@Document(collection = "synergySet")
+data class SynergySet(
     @Id
     var season: String = "",
-    var characters: List<String> = listOf(),
+    var synergies: List<String> = listOf(),
     var isProcessed: Boolean = false,
 )
