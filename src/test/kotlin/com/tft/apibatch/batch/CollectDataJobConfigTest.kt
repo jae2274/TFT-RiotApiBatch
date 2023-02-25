@@ -31,12 +31,12 @@ internal class CollectDataJobConfigTest {
     @Order(1)
     fun testCollectJob() {
         val jobParameters = JobParametersBuilder()
-            .addLong("willSavedSummonerIdCnt", 0)
-            .addLong("willUpdatedPuuIdCnt", 0)
-            .addLong("willSavedMatchCnt", 0)
-            .addLong("willUpdatedMatchCnt", 0)
-            .addLong("willConvertedMatchCnt", 100000)
-            .toJobParameters()
+                .addLong("willSavedSummonerIdCnt", 50)
+                .addLong("willUpdatedPuuIdCnt", 50)
+                .addLong("willSavedMatchCnt", 1000)
+                .addLong("willUpdatedMatchCnt", 1000)
+                .addLong("willConvertedMatchCnt", 1000)
+                .toJobParameters()
 
         var execution = jobLauncher.run(collectJob, jobParameters)
         Assertions.assertThat(execution.exitStatus).isEqualTo(ExitStatus.COMPLETED)
@@ -50,7 +50,7 @@ internal class CollectDataJobConfigTest {
     @Order(2)
     fun testStaticDataJob() {
         val jobParameters = JobParametersBuilder()
-            .toJobParameters()
+                .toJobParameters()
 
         val execution = jobLauncher.run(staticDataJob, jobParameters)
         Assertions.assertThat(execution.exitStatus).isEqualTo(ExitStatus.COMPLETED)

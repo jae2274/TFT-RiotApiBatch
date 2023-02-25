@@ -10,20 +10,22 @@ import org.springframework.stereotype.Component
 
 @Aspect
 @Component
-class FeignAop {
+class FeignAop(
+        @Value("\${break-time}")
+        val breakTime: Long
+) {
     private val log = LoggerFactory.getLogger(javaClass)
-
-    @Value("\${break-time}")
-    val breakTime: Long? = null
 
 
     @Around("execution(* com.tft.apibatch.feign.*ApiClient.*(..))")
     @Throws(Throwable::class)
     fun logExecutionTime(joinPoint: ProceedingJoinPoint): Any? {
-
-        var proceed = joinPoint.proceed()
-        Thread.sleep(breakTime!!)
-
-        return proceed
+        return try {
+            Thread.sleep(breakTime)
+            joinPoint.proceed()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }
