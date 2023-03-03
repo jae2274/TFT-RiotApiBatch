@@ -12,10 +12,19 @@ import org.springframework.stereotype.Service
 
 @Service
 class DataService(
-        private val matchRepository: MatchRepository,
-        private val deckRepository: DeckRepository,
-        private val idSetRepository: IdSetRepository,
+    private val matchRepository: MatchRepository,
+    private val deckRepository: DeckRepository,
+    private val idSetRepository: IdSetRepository,
 ) {
+
+    fun filterIfExisted(matchIds: List<String>): List<String> {
+        return matchRepository.findAllById(matchIds)
+            .map { it.match_id }
+            .toSet()
+            .let { existedIds ->
+                matchIds.filterNot { existedIds.contains(it) }
+            }
+    }
 
     fun saveData(matchDTO: MatchDTO) {
         val decks = Deck.listOf(matchDTO)
@@ -47,11 +56,17 @@ class DataService(
         idSetRepository.saveAll(idSetsByType.values)
     }
 
-    private fun setupIdSet(season: String, seasonNumber: Int, type: IdType, ids: Set<String>, idSetsByType: MutableMap<IdType, IdSet>) {
+    private fun setupIdSet(
+        season: String,
+        seasonNumber: Int,
+        type: IdType,
+        ids: Set<String>,
+        idSetsByType: MutableMap<IdType, IdSet>
+    ) {
         idSetsByType[type] = idSetsByType[type]
-                ?.let {
-                    it.ids = it.ids.union(ids)
-                    it
-                } ?: IdSet.of(season, seasonNumber, type, ids)
+            ?.let {
+                it.ids = it.ids.union(ids)
+                it
+            } ?: IdSet.of(season, seasonNumber, type, ids)
     }
 }
