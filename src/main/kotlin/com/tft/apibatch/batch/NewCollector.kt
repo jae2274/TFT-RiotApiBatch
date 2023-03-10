@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class NewCollector(
-    @Value("\${api-token}")
-    private val apiToken: String,
-    private val krApiClient: KrApiClient,
-    private val asiaApiClient: AsiaApiClient,
-    private val dataService: DataService
+        @Value("\${api-token}")
+        private val apiToken: String,
+        private val krApiClient: KrApiClient,
+        private val asiaApiClient: AsiaApiClient,
+        private val dataService: DataService
 ) {
     fun collectData(wantMatchCount: Int) {
 
@@ -22,13 +22,13 @@ class NewCollector(
             try {
                 krApiClient.callChallengerLeagues(apiToken)?.run {
                     this.entries
-                        .asSequence()
-                        .mapNotNull { krApiClient.callSummoner(apiToken, it.summonerId) }
-                        .mapNotNull { asiaApiClient.callMatches(apiToken, it.puuid, 0, 200) }
-                        .map { dataService.filterIfExisted(it) }
-                        .flatMap { it }
-                        .mapNotNull { asiaApiClient.callMatch(apiToken, it) }
-                        .forEach { dataService.saveData(it) }
+                            .asSequence()
+                            .mapNotNull { krApiClient.callSummoner(apiToken, it.summonerId) }
+                            .mapNotNull { asiaApiClient.callMatches(apiToken, it.puuid, 0, 400) }
+                            .map { dataService.filterIfExisted(it) }
+                            .flatMap { it }
+                            .mapNotNull { asiaApiClient.callMatch(apiToken, it) }
+                            .forEach { dataService.saveData(it) }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

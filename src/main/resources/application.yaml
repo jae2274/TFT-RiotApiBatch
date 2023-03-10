@@ -16,11 +16,6 @@ spring:
   config:
     import:
       - classpath:/apiKey.yml
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: tft_service
   main:
     web-application-type: none
 

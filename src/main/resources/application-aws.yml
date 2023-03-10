@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      host: ENC(BjZZdS+an0O4umSel0EqA+gkW9rpPXhYCWkYfhJCoAhfgrwMfEo7yxn7bVkkuxnXff+hDkaJZKyPpY8I0NgXAg==)
+      port: 27017
+      database: ENC(qF9jt3azp8GUIk1m9fkOZ45FkVKm6hpZ)
+      username: ENC(U9b7OmLUZ9Z5GPHkGOkFoA==)
+      password: ENC(1PI6z4vKKl4w36lYhZfxhZwWeWHYOHUukDDkw8s/OUw=)
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+    password: ${jasyptPassword}

@@ -33,7 +33,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     testImplementation("org.springframework.batch:spring-batch-test")
-    
+    implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.3")
+
+
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

@@ -6,5 +6,6 @@ import java.time.LocalDateTime
 
 abstract class BaseEntity {
     @CreatedDate
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    var createdAt: LocalDateTime = LocalDateTime.now()
+        protected set
 }
