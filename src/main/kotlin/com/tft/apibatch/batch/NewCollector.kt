@@ -1,39 +1,33 @@
 package com.tft.apibatch.batch
 
-import com.tft.apibatch.entry.*
-import com.tft.apibatch.feign.AsiaApiClient
-import com.tft.apibatch.feign.KrApiClient
-import com.tft.apibatch.repository.*
+import com.tft.apibatch.api.RiotApiClient
 import com.tft.apibatch.service.DataService
-import org.springframework.beans.factory.annotation.Value
+import kotlinx.coroutines.flow.*
 import org.springframework.stereotype.Component
 
 @Component
 class NewCollector(
-        @Value("\${api-token}")
-        private val apiToken: String,
-        private val krApiClient: KrApiClient,
-        private val asiaApiClient: AsiaApiClient,
+        private val apiClient: RiotApiClient,
         private val dataService: DataService
 ) {
-    fun collectData(wantMatchCount: Int) {
-
-        while (true) {
-            try {
-                krApiClient.callChallengerLeagues(apiToken)?.run {
-                    this.entries
-                            .asSequence()
-                            .mapNotNull { krApiClient.callSummoner(apiToken, it.summonerId) }
-                            .mapNotNull { asiaApiClient.callMatches(apiToken, it.puuid, 0, 400) }
-                            .map { dataService.filterIfExisted(it) }
-                            .flatMap { it }
-                            .mapNotNull { asiaApiClient.callMatch(apiToken, it) }
-                            .forEach { dataService.saveData(it) }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+    suspend fun collectData() {
+        flow {
+            while (true) {
+                apiClient.callChallengerLeagues()
+                        ?.let { leagueListDTO ->
+                            leagueListDTO.entries.forEach { emit(it) }
+                        }
             }
         }
-    }
+                .buffer(0)
+                .mapNotNull { apiClient.callSummoner(it.summonerId) }
+                .mapNotNull { apiClient.callMatches(it.puuid, 0, 400) }
+                .map { dataService.filterIfExisted(it) }
+                .transform { matchIds ->
+                    matchIds.forEach { emit(it) }
+                }
+                .mapNotNull { apiClient.callMatch(it) }
+                .collect { dataService.saveData(it) }
 
+    }
 }
