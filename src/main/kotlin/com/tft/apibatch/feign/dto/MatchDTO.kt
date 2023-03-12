@@ -23,14 +23,11 @@ data class MatchDTO(
     )
 
     data class ParticipantDTO(
-            var gold_left: Int?,
-            var last_round: Int?,
-            var level: Int?,
-            var placement: Int?,
-            var players_eliminated: Int?,
+            var gold_left: Int,
+            var last_round: Int,
+            var level: Int,
+            var placement: Int,
             var puuid: String?,
-            var time_eliminated: Float?,
-            var total_damage_to_players: Int?,
             var traits: List<TraitDTO>,
             var units: List<UnitDTO>,
             var augments: List<String>
@@ -38,10 +35,10 @@ data class MatchDTO(
 
     data class TraitDTO(
             var name: String,
-            var num_units: Int?,
-            var style: Int?,
-            var tier_current: Int?,
-            var tier_total: Int?,
+            var num_units: Int,
+            var style: Int,
+            var tier_current: Int,
+            var tier_total: Int,
     )
 
     data class UnitDTO(
@@ -50,7 +47,7 @@ data class MatchDTO(
             var character_id: String,
             var chosen: String?,
             var name: String?,
-            var rarity: Int?,
-            var tier: Int?,
+            var rarity: Int,
+            var tier: Int,
     )
 }

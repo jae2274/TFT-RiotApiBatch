@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: tft_service
+  config:
+    import: classpath:jasypt-password.yml
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+    password: ${jasyptPassword}

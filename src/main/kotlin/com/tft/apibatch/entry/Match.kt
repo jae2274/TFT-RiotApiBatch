@@ -8,17 +8,17 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class Match(
         @Id
         val match_id: String = "",
-        var info: Info? = null,
-        var participants: List<Participant>? = null,
+        var info: Info?,
+        var participants: List<Participant>?,
 ) : BaseEntity() {
 
     data class Info(
-            var game_datetime: Long? = null,
-            var game_length: Float? = null,
-            var queue_id: Int? = null,
-            var tft_game_type: String? = null,
-            var tft_set_core_name: String? = null,
-            var tft_set_number: Int? = null,
+            var game_datetime: Long?,
+            var game_length: Float?,
+            var queue_id: Int?,
+            var tft_game_type: String,
+            var tft_set_core_name: String,
+            var tft_set_number: Int,
     ) {
         companion object {
             fun of(infoDTO: MatchDTO.InfoDTO): Info {
@@ -35,16 +35,13 @@ data class Match(
     }
 
     data class Participant(
-            var gold_left: Int? = null,
-            var last_round: Int? = null,
-            var level: Int? = null,
-            var placement: Int? = null,
-            var players_eliminated: Int? = null,
-            var puuid: String? = null,
-            var time_eliminated: Float? = null,
-            var total_damage_to_players: Int? = null,
-            var traits: List<Trait>? = null,
-            var units: List<Unit>? = null,
+            var gold_left: Int,
+            var last_round: Int,
+            var level: Int,
+            var placement: Int,
+            var puuid: String?,
+            var traits: List<Trait>,
+            var units: List<Unit>,
             var augments: List<String>,
     ) {
         companion object {
@@ -56,10 +53,7 @@ data class Match(
                                     last_round = participant.last_round,
                                     level = participant.level,
                                     placement = participant.placement,
-                                    players_eliminated = participant.players_eliminated,
                                     puuid = participant.puuid,
-                                    time_eliminated = participant.time_eliminated,
-                                    total_damage_to_players = participant.total_damage_to_players,
                                     traits = Trait.listOf(participant.traits),
                                     units = Unit.listOf(participant.units),
                                     augments = participant.augments,
@@ -70,11 +64,11 @@ data class Match(
     }
 
     data class Trait(
-            var name: String? = null,
-            var num_units: Int? = null,
-            var style: Int? = null,
-            var tier_current: Int? = null,
-            var tier_total: Int? = null,
+            var name: String,
+            var num_units: Int,
+            var style: Int,
+            var tier_current: Int,
+            var tier_total: Int,
     ) {
         companion object {
             fun listOf(traits: List<MatchDTO.TraitDTO>): List<Trait> {
@@ -94,13 +88,13 @@ data class Match(
     }
 
     data class Unit(
-            var items: List<Int>? = null,
-            var itemNames: List<String>? = null,
-            var character_id: String? = null,
-            var chosen: String? = null,
-            var name: String? = null,
-            var rarity: Int? = null,
-            var tier: Int? = null,
+            var items: List<Int>?,
+            var itemNames: List<String>,
+            var character_id: String,
+            var chosen: String?,
+            var name: String?,
+            var rarity: Int,
+            var tier: Int,
     ) {
         companion object {
             fun listOf(units: List<MatchDTO.UnitDTO>): List<Unit> {

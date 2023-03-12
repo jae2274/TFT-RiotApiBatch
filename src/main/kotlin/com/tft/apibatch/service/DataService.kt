@@ -1,34 +1,39 @@
 package com.tft.apibatch.service
 
-import com.tft.apibatch.entry.Deck
-import com.tft.apibatch.entry.IdSet
-import com.tft.apibatch.entry.IdType
-import com.tft.apibatch.entry.Match
+import com.tft.apibatch.entry.*
 import com.tft.apibatch.feign.dto.MatchDTO
 import com.tft.apibatch.repository.DeckRepository
 import com.tft.apibatch.repository.IdSetRepository
 import com.tft.apibatch.repository.MatchRepository
+import com.tft.apibatch.repository.WinnerDeckRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class DataService(
-    private val matchRepository: MatchRepository,
-    private val deckRepository: DeckRepository,
-    private val idSetRepository: IdSetRepository,
+        private val matchRepository: MatchRepository,
+        private val deckRepository: DeckRepository,
+        private val winnerDeckRepository: WinnerDeckRepository,
+        private val idSetRepository: IdSetRepository,
 ) {
 
     fun filterIfExisted(matchIds: List<String>): List<String> {
         return matchRepository.findAllById(matchIds)
-            .map { it.match_id }
-            .toSet()
-            .let { existedIds ->
-                matchIds.filterNot { existedIds.contains(it) }
-            }
+                .map { it.match_id }
+                .toSet()
+                .let { existedIds ->
+                    matchIds.filterNot { existedIds.contains(it) }
+                }
     }
 
+    @Transactional//mongoDB standalone에서는 트랜잭션은 작동하지 않는다
     fun saveData(matchDTO: MatchDTO) {
         val decks = Deck.listOf(matchDTO)
         deckRepository.saveAll(decks)
+
+        decks.minByOrNull { it.placement }!!
+                .apply { winnerDeckRepository.save(WinnerDeck.of(this)) }
+
         matchRepository.save(Match.of(matchDTO))
 
         val units = decks.flatMap { it.units }
@@ -57,16 +62,16 @@ class DataService(
     }
 
     private fun setupIdSet(
-        season: String,
-        seasonNumber: Int,
-        type: IdType,
-        ids: Set<String>,
-        idSetsByType: MutableMap<IdType, IdSet>
+            season: String,
+            seasonNumber: Int,
+            type: IdType,
+            ids: Set<String>,
+            idSetsByType: MutableMap<IdType, IdSet>
     ) {
         idSetsByType[type] = idSetsByType[type]
-            ?.let {
-                it.ids = it.ids.union(ids)
-                it
-            } ?: IdSet.of(season, seasonNumber, type, ids)
+                ?.let {
+                    it.ids = it.ids.union(ids)
+                    it
+                } ?: IdSet.of(season, seasonNumber, type, ids)
     }
 }

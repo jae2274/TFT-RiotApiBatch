@@ -1,6 +1,7 @@
 package com.tft.apibatch.batch
 
 import com.tft.apibatch.api.RiotApiClient
+import com.tft.apibatch.feign.dto.MatchDTO
 import com.tft.apibatch.service.DataService
 import kotlinx.coroutines.flow.*
 import org.springframework.stereotype.Component
@@ -11,7 +12,12 @@ class NewCollector(
         private val dataService: DataService
 ) {
     suspend fun collectData() {
-        flow {
+        flowFromApi()
+                .collect { dataService.saveData(it) }
+    }
+
+    fun flowFromApi(): Flow<MatchDTO> {
+        return flow {
             while (true) {
                 apiClient.callChallengerLeagues()
                         ?.let { leagueListDTO ->
@@ -27,7 +33,5 @@ class NewCollector(
                     matchIds.forEach { emit(it) }
                 }
                 .mapNotNull { apiClient.callMatch(it) }
-                .collect { dataService.saveData(it) }
-
     }
 }
