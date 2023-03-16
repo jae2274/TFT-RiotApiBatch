@@ -93,6 +93,12 @@ class DataService(
 
             for (trait in deck.traits) {
                 val synergyStats = tftStats.synergies.getOrPut(trait.name) { TftStats.SynergyStats() }
+
+                if (trait.tier_current != 0) {
+                    synergyStats.totalCount += 1
+                    synergyStats.totalPlacement += deck.placement
+                }
+
                 val synergyTierStats = synergyStats.tiers.getOrPut(trait.tier_current) { TftStats.Stats() }
                 synergyTierStats.totalCount += 1
                 synergyTierStats.totalPlacement += deck.placement

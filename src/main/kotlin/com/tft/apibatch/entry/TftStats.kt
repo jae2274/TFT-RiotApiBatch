@@ -25,6 +25,8 @@ data class TftStats(
     )
 
     data class SynergyStats(
+            var totalPlacement: Long = 0,
+            var totalCount: Long = 0,
             val tiers: MutableMap<Int, Stats> = mutableMapOf(),
     )
 
