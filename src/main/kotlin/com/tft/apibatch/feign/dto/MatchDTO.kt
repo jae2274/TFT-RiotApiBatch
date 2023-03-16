@@ -14,7 +14,7 @@ data class MatchDTO(
     data class InfoDTO(
             var game_datetime: Long?,
             var game_length: Float?,
-            var game_version: String?,
+            var game_version: String,
             var participants: List<ParticipantDTO>,
             var queue_id: Int?,
             val tft_game_type: String,

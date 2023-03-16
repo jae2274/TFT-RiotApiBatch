@@ -10,6 +10,7 @@ abstract class BaseDeck : BaseEntity() {
             var game_datetime: Long? = null,
             var game_length: Float? = null,
             var queue_id: Int? = null,
+            var game_version: String,
             var tft_game_type: String? = null,
             var tft_set_core_name: String = "",
             var tft_set_number: Int = 0,
@@ -20,6 +21,7 @@ abstract class BaseDeck : BaseEntity() {
                         game_datetime = infoDTO.game_datetime,
                         game_length = infoDTO.game_length,
                         queue_id = infoDTO.queue_id,
+                        game_version = infoDTO.game_version,
                         tft_game_type = infoDTO.tft_game_type,
                         tft_set_core_name = infoDTO.tft_set_core_name,
                         tft_set_number = infoDTO.tft_set_number,
@@ -32,7 +34,7 @@ abstract class BaseDeck : BaseEntity() {
             var name: String = "",
             var num_units: Int?,
             var style: Int?,
-            var tier_current: Int?,
+            var tier_current: Int,
             var tier_total: Int?,
     ) {
         companion object {
@@ -59,7 +61,7 @@ abstract class BaseDeck : BaseEntity() {
             var chosen: String?,
             var name: String?,
             var rarity: Int?,
-            var tier: Int?,
+            var tier: Int,
     ) {
         companion object {
             fun listOf(units: List<MatchDTO.UnitDTO>): List<Unit> {

@@ -1,6 +1,7 @@
 package com.tft.apibatch.entry
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 
 
@@ -8,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class WinnerDeck(
         @Id
         var _id: String,
+        @field:Indexed(unique = true)
         var match_id: String,
         var info: Info,
         var gold_left: Int,

@@ -2,10 +2,12 @@ package com.tft.apibatch.entry
 
 import com.tft.apibatch.feign.dto.MatchDTO
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.CompoundIndex
 import org.springframework.data.mongodb.core.mapping.Document
 
 
 @Document(collection = "deck")
+@CompoundIndex(def = "{'match_id': 1, 'placement': 1}", unique = true)
 data class Deck(
         @Id
         var _id: String? = null,

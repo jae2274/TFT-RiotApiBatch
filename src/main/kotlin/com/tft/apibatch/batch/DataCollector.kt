@@ -7,13 +7,20 @@ import kotlinx.coroutines.flow.*
 import org.springframework.stereotype.Component
 
 @Component
-class NewCollector(
+class DataCollector(
         private val apiClient: RiotApiClient,
         private val dataService: DataService
 ) {
-    suspend fun collectData() {
+    suspend fun collect() {
         flowFromApi()
-                .collect { dataService.saveData(it) }
+                .onEach {
+                    try {
+                        dataService.saveData(it)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                .collect()
     }
 
     fun flowFromApi(): Flow<MatchDTO> {
