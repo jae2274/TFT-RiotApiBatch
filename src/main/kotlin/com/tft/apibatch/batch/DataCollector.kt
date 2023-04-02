@@ -11,18 +11,6 @@ class DataCollector(
         private val apiClient: RiotApiClient,
         private val dataService: DataService
 ) {
-    suspend fun collect() {
-        flowFromApi()
-                .onEach {
-                    try {
-                        dataService.saveData(it)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-                .collect()
-    }
-
     fun flowFromApi(): Flow<MatchDTO> {
         return flow {
             while (true) {
@@ -40,5 +28,17 @@ class DataCollector(
                     matchIds.forEach { emit(it) }
                 }
                 .mapNotNull { apiClient.callMatch(it) }
+    }
+
+    suspend fun collect() {
+        flowFromApi()
+                .onEach {
+                    try {
+                        dataService.saveData(it)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                .collect()
     }
 }
