@@ -12,3 +12,4 @@ jasypt:
     password: ${jasyptPassword}
 
 api-token: ENC(TkzX6bFai6xA6yU9lFx5L7aOa9JtuT3Aw5peYxXTeTvpvoOmT7X2B9SbJdugY0sygeVP8c65TiA=)
+slack.token: ENC(IVD2Sq2qSXByzUcZQMv6b6fQxnoSrn+dsKSdf9W4XwZdO3kjMX7AsRYz0kRJTrUZ4OdyOtIy1wUPCey04lzFYA==)
