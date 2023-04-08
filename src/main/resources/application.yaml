@@ -13,9 +13,6 @@ feign:
 
 #h2 db 설정
 spring:
-  config:
-    import:
-      - classpath:/apiKey.yml
   main:
     web-application-type: none
 
