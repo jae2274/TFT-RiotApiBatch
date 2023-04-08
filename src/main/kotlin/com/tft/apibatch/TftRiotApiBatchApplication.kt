@@ -1,36 +1,15 @@
 package com.tft.apibatch
 
-import com.tft.apibatch.batch.DataCollector
-import com.tft.apibatch.support.util.SlackUtil
-import kotlinx.coroutines.runBlocking
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
-import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.cloud.openfeign.EnableFeignClients
+import org.springframework.scheduling.annotation.EnableScheduling
 
 @EnableFeignClients
-@EnableBatchProcessing
+@EnableScheduling
 @SpringBootApplication(exclude = [DataSourceAutoConfiguration::class])
 class TftRiotApiBatchApplication
-    (
-    val dataCollector: DataCollector,
-    val slackUtil: SlackUtil,
-) : CommandLineRunner {
-    override fun run(vararg args: String?) {
-        runBlocking {
-            while (true) {
-                try {
-                    dataCollector.collect()
-                } catch (e: Exception) {
-                    slackUtil.sendSlackMessage(e)
-                    Thread.sleep(10000)
-                }
-            }
-        }
-    }
-}
 
 fun main(args: Array<String>) {
     runApplication<TftRiotApiBatchApplication>(*args)
