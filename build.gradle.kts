@@ -34,6 +34,7 @@ dependencies {
 
     testImplementation("org.springframework.batch:spring-batch-test")
     implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.3")
+    implementation("net.gpedro.integrations.slack:slack-webhook:1.4.0")
 
 
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")

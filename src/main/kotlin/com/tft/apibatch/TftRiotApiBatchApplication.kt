@@ -1,6 +1,7 @@
 package com.tft.apibatch
 
 import com.tft.apibatch.batch.DataCollector
+import com.tft.apibatch.support.util.SlackUtil
 import kotlinx.coroutines.runBlocking
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
 import org.springframework.boot.CommandLineRunner
@@ -13,8 +14,9 @@ import org.springframework.cloud.openfeign.EnableFeignClients
 @EnableBatchProcessing
 @SpringBootApplication(exclude = [DataSourceAutoConfiguration::class])
 class TftRiotApiBatchApplication
-(
-        val dataCollector: DataCollector
+    (
+    val dataCollector: DataCollector,
+    val slackUtil: SlackUtil,
 ) : CommandLineRunner {
     override fun run(vararg args: String?) {
         runBlocking {
@@ -22,7 +24,7 @@ class TftRiotApiBatchApplication
                 try {
                     dataCollector.collect()
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    slackUtil.sendSlackMessage(e)
                     Thread.sleep(10000)
                 }
             }
