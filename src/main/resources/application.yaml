@@ -12,9 +12,6 @@ feign:
 #h2 console 활성화 및 경로 설정
 
 #h2 db 설정
-spring:
-  main:
-    web-application-type: none
 
 logging:
   level:
