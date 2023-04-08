@@ -4,6 +4,12 @@
     "Name": "owl2274/tft-api-batch:latest",
     "Update": "true"
   },
+  "Ports": [
+    {
+      "ContainerPort": 8080,
+      "HostPort": 5000
+    }
+  ],
   "Authentication": {
     "Bucket": "elasticbeanstalk-ap-northeast-2-986069063944",
     "Key": "resources/dockercfg"
