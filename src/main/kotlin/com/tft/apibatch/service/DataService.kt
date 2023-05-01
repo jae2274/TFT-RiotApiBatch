@@ -11,26 +11,26 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class DataService(
-        private val deckRepository: DeckRepository,
-        private val winnerDeckRepository: WinnerDeckRepository,
-        private val idSetRepository: IdSetRepository,
-        private val tftStatsRepository: TFTStatsRepository,
+    private val deckRepository: DeckRepository,
+    private val winnerDeckRepository: WinnerDeckRepository,
+    private val idSetRepository: IdSetRepository,
+    private val tftStatsRepository: TFTStatsRepository,
 ) {
 
     fun filterIfExisted(matchIds: List<String>): List<String> {
         return winnerDeckRepository.findAllByMatchId(matchIds)
-                .map { it.match_id }
-                .toSet()
-                .let { existedIds ->
-                    matchIds.filterNot { existedIds.contains(it) }
-                }
+            .map { it.match_id }
+            .toSet()
+            .let { existedIds ->
+                matchIds.filterNot { existedIds.contains(it) }
+            }
     }
 
     @Transactional//mongoDB standalone에서는 트랜잭션은 작동하지 않는다
     fun saveData(matchDTO: MatchDTO) {
 
         val count = matchDTO.metadata.match_id
-                .let { filterIfExisted(listOf(it)).count() }
+            .let { filterIfExisted(listOf(it)).count() }
 
         if (count <= 0) {
             return
@@ -46,7 +46,7 @@ class DataService(
     fun saveDecks(decks: List<Deck>) {
         deckRepository.saveAll(decks)
         decks.minByOrNull { it.placement }!!
-                .apply { winnerDeckRepository.save(WinnerDeck.of(this)) }
+            .apply { winnerDeckRepository.save(WinnerDeck.of(this)) }
     }
 
     fun saveIdSets(decks: List<Deck>) {
@@ -78,11 +78,11 @@ class DataService(
     fun saveStats(decks: List<Deck>) {
         val info = decks.first().info
         val tftStats = tftStatsRepository.findByGameVersion(info.game_version)
-                ?: TftStats(
-                        gameVersion = info.game_version,
-                        season = info.tft_set_core_name,
-                        seasonNumber = info.tft_set_number,
-                )
+            ?: TftStats(
+                gameVersion = info.game_version,
+                season = info.tft_set_core_name,
+                seasonNumber = info.tft_set_number,
+            )
 
         for (deck in decks) {
             for (augment in deck.augments) {
@@ -117,6 +117,13 @@ class DataService(
                     val championItemStats = championStats.items.getOrPut(itemName) { TftStats.Stats() }
                     championItemStats.totalCount += 1
                     championItemStats.totalPlacement += deck.placement
+
+                    val itemStats = tftStats.items.getOrPut(itemName) { TftStats.ItemStats() }
+                    itemStats.totalCount += 1
+                    itemStats.totalPlacement += deck.placement
+                    val itemChampionStats = itemStats.champions.getOrPut(unit.character_id) { TftStats.Stats() }
+                    itemChampionStats.totalCount += 1
+                    itemChampionStats.totalPlacement += deck.placement
                 }
             }
         }
@@ -125,16 +132,16 @@ class DataService(
     }
 
     private fun setupIdSet(
-            season: String,
-            seasonNumber: Int,
-            type: IdType,
-            ids: Set<String>,
-            idSetsByType: MutableMap<IdType, IdSet>
+        season: String,
+        seasonNumber: Int,
+        type: IdType,
+        ids: Set<String>,
+        idSetsByType: MutableMap<IdType, IdSet>
     ) {
         idSetsByType[type] = idSetsByType[type]
-                ?.let {
-                    it.ids = it.ids.union(ids)
-                    it
-                } ?: IdSet.of(season, seasonNumber, type, ids)
+            ?.let {
+                it.ids = it.ids.union(ids)
+                it
+            } ?: IdSet.of(season, seasonNumber, type, ids)
     }
 }

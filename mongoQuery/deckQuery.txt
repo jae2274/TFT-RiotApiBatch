@@ -1,0 +1,49 @@
+// use tft_service;
+//
+// db.deck.aggregate({$group:{_id:{match_id:"$match_id", placement:"$placement"},count:{$sum:1}}}, {$match:{count:{$gt:1}}})
+// const countMap = db.deck.aggregate({$group:{_id:{match_id:"$match_id", placement:"$placement"},count:{$sum:1}}}, {$match:{count:{$gt:1}}})
+//
+//
+// countMap.forEach(doc=>{
+//     let isSet = false
+//     db.deck.find({match_id:doc._id.match_id, placement:doc._id.placement}).forEach(findDoc=> {
+//         if(!isSet){
+//             isSet = true
+//         }else{
+//             db.deck.deleteOne({_id:findDoc._id})
+//         }
+//     })
+// });
+//
+//
+// db.deck.createIndex({ match_id: 1, placement: 1 }, { unique: true })
+
+
+
+db.deck.find({ placement: 1 }).forEach(function(doc) {
+    db.winnerDeck.insertOne(doc);
+})
+
+
+db.deck.aggregate([
+    { $match: { placement: 1 } },
+    { $out: "winnerDeck" }
+])
+
+
+db.deck.aggregate([
+    {
+        $group: {
+            _id: "$field_name"
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            field_name: "$_id"
+        }
+    }
+])
+
+db.winnerDeck.createIndex({ match_id: 1 }, { unique: true })
+db.deck.createIndex({ match_id: 1, placement: 1 }, { unique: true })
