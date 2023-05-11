@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.tft.apibatch.MyActor
-import com.tft.apibatch.feign.dto.LeagueListDTO
-import com.tft.apibatch.feign.dto.MatchDTO
-import com.tft.apibatch.feign.dto.SummonerDTO
+import com.tft.apibatch.api.dto.LeagueListDTO
+import com.tft.apibatch.api.dto.MatchDTO
+import com.tft.apibatch.api.dto.SummonerDTO
 import com.tft.apibatch.support.util.SlackUtil
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
@@ -17,9 +17,9 @@ import org.springframework.stereotype.Component
 @Component
 class RiotApiClient(
     @Value("\${feign.tft.asiaApi.url}")
-    val asiaApiUrl: String,
+    private val asiaApiUrl: String,
     @Value("\${feign.tft.krApi.url}")
-    val krApiUrl: String,
+    private val krApiUrl: String,
     @Value("\${api-token}")
     val apiToken: String,
     val actor: MyActor<ApiRequest, String>,

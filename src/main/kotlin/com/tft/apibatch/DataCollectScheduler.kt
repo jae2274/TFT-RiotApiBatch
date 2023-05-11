@@ -1,7 +1,7 @@
 package com.tft.apibatch
 
 import com.tft.apibatch.api.RiotApiClient
-import com.tft.apibatch.feign.dto.MatchDTO
+import com.tft.apibatch.api.dto.MatchDTO
 import com.tft.apibatch.service.DataService
 import com.tft.apibatch.support.util.SlackUtil
 import org.springframework.scheduling.annotation.Scheduled

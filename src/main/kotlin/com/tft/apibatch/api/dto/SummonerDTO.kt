@@ -1,7 +1,7 @@
-package com.tft.apibatch.feign.dto
+package com.tft.apibatch.api.dto
 
 
-data class SummonerDTO (
+data class SummonerDTO(
     val accountId: String?,
     val profileIconId: Int?,
     val revisionDate: Long?,

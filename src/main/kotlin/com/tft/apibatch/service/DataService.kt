@@ -1,7 +1,7 @@
 package com.tft.apibatch.service
 
+import com.tft.apibatch.api.dto.MatchDTO
 import com.tft.apibatch.entry.*
-import com.tft.apibatch.feign.dto.MatchDTO
 import com.tft.apibatch.repository.DeckRepository
 import com.tft.apibatch.repository.IdSetRepository
 import com.tft.apibatch.repository.TFTStatsRepository

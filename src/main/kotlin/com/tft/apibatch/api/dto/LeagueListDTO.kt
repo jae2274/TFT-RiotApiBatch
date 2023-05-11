@@ -1,4 +1,4 @@
-package com.tft.apibatch.feign.dto
+package com.tft.apibatch.api.dto
 
 
 data class LeagueListDTO(
