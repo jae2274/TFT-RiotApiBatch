@@ -8,7 +8,6 @@ import com.tft.apibatch.MyActor
 import com.tft.apibatch.api.dto.LeagueListDTO
 import com.tft.apibatch.api.dto.MatchDTO
 import com.tft.apibatch.api.dto.SummonerDTO
-import com.tft.apibatch.support.util.SlackUtil
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
@@ -23,7 +22,6 @@ class RiotApiClient(
     @Value("\${api-token}")
     val apiToken: String,
     val actor: MyActor<ApiRequest, String>,
-    private val slackUtil: SlackUtil,
 ) {
     private val objectMapper =
         jacksonObjectMapper().registerKotlinModule().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -93,7 +91,7 @@ class RiotApiClient(
             actor.process(request).receive()
         }
             .getOrElse {
-                slackUtil.sendSlackMessage(it)
+                it.printStackTrace()
                 null
             }
     }
