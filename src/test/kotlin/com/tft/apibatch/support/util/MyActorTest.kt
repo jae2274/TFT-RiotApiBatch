@@ -1,16 +1,27 @@
 package com.tft.apibatch.support.util
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 
 class MyActorTest {
 
     companion object {
-        val breakTime = 2000L
+        const val breakTime = 1000L
+
+        val expectedResults = listOf(1L, 2L, 3L, 4L, 6L)
+        val divideMessages = listOf(
+            DivideMessage(12, 12),
+            DivideMessage(12, 6),
+            DivideMessage(12, 4),
+            DivideMessage(12, 3),
+            DivideMessage(12, 2),
+        )
     }
 
     data class DivideMessage(
@@ -18,66 +29,96 @@ class MyActorTest {
         val divisor: Long,
     )
 
-    private val task = { message: DivideMessage ->
+    private val divideTask = { message: DivideMessage ->
         Thread.sleep(breakTime)
         message.dividend / message.divisor
     }
 
-    private val actor: MyActor<DivideMessage, Long> = MyActor(task)
+    private val actor: MyActor<DivideMessage, Long> = MyActor(divideTask)
+
 
     @Test
-    @DisplayName("여러 쓰레드, 또는 코루틴에서 동시에 process를 호출하여도 하나의 코루틴 안에서 순차적으로 처리된다.")
-    fun test() = runTest {
-
-        val extectedResults = listOf(2L, 3L, 4L, 6L)
-        val divideMessages = listOf(
-            DivideMessage(12, 6),
-            DivideMessage(12, 4),
-            DivideMessage(12, 3),
-            DivideMessage(12, 2),
-        )
-
-
-        withContext(Dispatchers.IO) {
-            val defferedList = divideMessages.map { async { task(it) } }
-
-            val start = System.currentTimeMillis()
-            val results = defferedList.map { it.await() }
-            val requiredTime = System.currentTimeMillis() - start
-
-            assertThat(results).isEqualTo(extectedResults)
-            assertThat(requiredTime).isCloseTo(breakTime, Percentage.withPercentage(10.toDouble()))
+    @DisplayName("MyActor를 사용한 순차 실행 테스트")//여러 쓰레드, 또는 코루틴에서 동시에 process를 호출하여도 하나의 코루틴 안에서 순차적으로 처리된다.
+    fun runningConcurrentlyByMyActor() = runTest {
+        //비교를 위한 코틀린 병렬 실행 테스트, 다른 의미는 없다.
+        checkTime {
+            runningConcurrently(divideMessages) { divideTask(it) }
         }
-
-        withContext(Dispatchers.IO) {
-            val defferedList = divideMessages.map {
-                async { actor.process(it).receive().getOrThrow() }
+            .let { (requiredTime, results) ->
+                assertAll(
+                    { assertThat(results).isEqualTo(expectedResults) },
+                    { assertThat(requiredTime).isCloseTo(breakTime, Percentage.withPercentage(10.0)) }
+                )
             }
 
-            val start = System.currentTimeMillis()
-            val results = defferedList.map { it.await() }
-            val requiredTime = System.currentTimeMillis() - start
+        //위의 테스트와 비교하여 소요되는 시간을 주시한다.
+        checkTime {
+            runningConcurrently(divideMessages) { actor.process(it).receive().getOrThrow() }
+        }
+            .let { (requiredTime, results) ->
+                assertAll(
+                    { assertThat(results).isEqualTo(expectedResults) },
+                    {
+                        assertThat(requiredTime).isCloseTo(
+                            breakTime * expectedResults.size,
+                            Percentage.withPercentage(10.0)
+                        )
+                    }
+                )
+            }
+    }
 
-            assertThat(results).isEqualTo(extectedResults)
-            assertThat(requiredTime).isCloseTo(4 * breakTime, Percentage.withPercentage(10.toDouble()))
+    private suspend fun <T> checkTime(
+        action: suspend () -> T?
+    ): Pair<Long, T> {
+        val start = System.currentTimeMillis()
+        val result = action()
+        val requiredTime = System.currentTimeMillis() - start
+
+        println(requiredTime)
+        return requiredTime to result!!
+    }
+
+    private suspend fun runningConcurrently(
+        divideMessages: List<DivideMessage>,
+        function: suspend (DivideMessage) -> Long
+    ): List<Long> = withContext(Dispatchers.IO) {
+        val defferedList = divideMessages.map { async { function(it) } }
+        defferedList.map { it.await() }
+    }
+
+
+    @Test
+    @DisplayName("MyActor 내부에서 실행 중 예외가 발생한 경우")
+    fun ifFailed() = runTest {
+        val receiveChannel = actor.process(DivideMessage(5, 0))
+
+        val result = receiveChannel.receive()
+        assertThat(result.isFailure).isTrue
+
+        try {
+            result.getOrThrow()
+        } catch (e: ArithmeticException) {
+            assertThat(e.message).isEqualTo("/ by zero")
         }
     }
 
-    
     @Test
-    @DisplayName("actor 내부에서 실행 중 예외가 발생한 경우")
-    fun ifFailed() {
-        val receiveChannel = actor.process(DivideMessage(5, 0))
+    @DisplayName("MyActor stop 메서도 테스트")
+    fun stop() = runTest {
+        val divideMessage = DivideMessage(10, 2)
 
-        runBlocking {
-            val result = receiveChannel.receive()
-            assertThat(result.isFailure).isTrue
+        assertThat(actor.process(divideMessage).receive().isSuccess).isTrue
 
-            try {
-                result.getOrThrow()
-            } catch (e: ArithmeticException) {
-                assertThat(e.message).isEqualTo("/ by zero")
-            }
+        assertThat(actor.stop().receive()).isTrue
+
+        val result = actor.process(DivideMessage(10, 2)).receive()
+        assertThat(result.isFailure).isTrue
+
+        try {
+            result.getOrThrow()
+        } catch (e: ClosedSendChannelException) {
+            assertThat(e.message).isEqualTo("Channel was closed")
         }
     }
 }

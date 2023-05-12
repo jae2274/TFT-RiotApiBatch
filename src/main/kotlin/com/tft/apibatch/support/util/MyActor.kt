@@ -3,6 +3,7 @@ package com.tft.apibatch.support.util
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
@@ -11,7 +12,7 @@ import kotlinx.coroutines.launch
 // 메시지 형태를 Generic으로 정의합니다.
 sealed class Message<T, R> {
     data class Process<T, R>(val message: T, val responseChannel: SendChannel<Result<R>>) : Message<T, R>()
-    class Stop<T, R> : Message<T, R>()
+    class Stop<T, R>(val responseChannel: SendChannel<Boolean>) : Message<T, R>()
 }
 
 class MyActor<T, R>(
@@ -37,7 +38,10 @@ class MyActor<T, R>(
                     }
 
                     is Message.Stop -> {
-                        channel.close()
+                        message.responseChannel.send(
+                            channel.close()
+                        )
+
                         break
                     }
                 }
@@ -45,17 +49,26 @@ class MyActor<T, R>(
         }
     }
 
-    fun stop() {
+    fun stop(): ReceiveChannel<Boolean> {
+        val responseChannel = Channel<Boolean>()
+
         launch {
-            channel.send(Message.Stop())
+            channel.send(Message.Stop(responseChannel))
         }
+
+        return responseChannel
     }
 
     fun process(message: T): ReceiveChannel<Result<R>> {
         val responseChannel = Channel<Result<R>>()
         launch {
             val process = Message.Process(message, responseChannel)
-            channel.send(process)
+            try {
+                channel.send(process)
+            } catch (e: ClosedSendChannelException) {
+                responseChannel.send(Result.failure(e))
+            }
+
         }
 
         return responseChannel
