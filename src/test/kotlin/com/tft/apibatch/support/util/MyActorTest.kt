@@ -98,6 +98,7 @@ class MyActorTest {
 
         try {
             result.getOrThrow()
+            fail("Expect ArithmeticException, but not caused")
         } catch (e: ArithmeticException) {
             assertThat(e.message).isEqualTo("/ by zero")
         }
@@ -117,6 +118,7 @@ class MyActorTest {
 
         try {
             result.getOrThrow()
+            fail("Expect ClosedSendChannelException, but not caused")
         } catch (e: ClosedSendChannelException) {
             assertThat(e.message).isEqualTo("Channel was closed")
         }
