@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.tft.apibatch.MyActor
 import com.tft.apibatch.api.dto.LeagueListDTO
 import com.tft.apibatch.api.dto.MatchDTO
 import com.tft.apibatch.api.dto.SummonerDTO
+import com.tft.apibatch.support.util.MyActor
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod

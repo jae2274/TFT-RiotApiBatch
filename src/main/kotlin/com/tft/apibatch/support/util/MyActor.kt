@@ -1,4 +1,4 @@
-package com.tft.apibatch
+package com.tft.apibatch.support.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +15,7 @@ sealed class Message<T, R> {
 }
 
 class MyActor<T, R>(
-        private val processMessage: suspend (T) -> R, // 처리할 메시지를 인자로 받고 처리 결과를 반환하는 함수
+    private val processMessage: suspend (T) -> R, // 처리할 메시지를 인자로 받고 처리 결과를 반환하는 함수
 ) : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val channel = Channel<Message<T, R>>()
@@ -29,7 +29,7 @@ class MyActor<T, R>(
                             val response = processMessage(message.message)
 
                             message.responseChannel.send(
-                                    Result.success(response)
+                                Result.success(response)
                             )
                         } catch (e: Exception) {
                             message.responseChannel.send(Result.failure(e))
