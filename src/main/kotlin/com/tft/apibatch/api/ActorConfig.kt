@@ -1,6 +1,7 @@
 package com.tft.apibatch.api
 
 import com.tft.apibatch.support.util.MyActor
+import kotlinx.coroutines.delay
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -44,7 +45,7 @@ class ActorConfig(
             .bodyToMono(String::class.java)
             .block()
             .let {
-                Thread.sleep(breakTime)
+                delay(breakTime)
                 it
             }
     }

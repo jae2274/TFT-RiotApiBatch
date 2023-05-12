@@ -43,13 +43,13 @@ class DataService(
         saveStats(decks)
     }
 
-    fun saveDecks(decks: List<Deck>) {
+    private fun saveDecks(decks: List<Deck>) {
         deckRepository.saveAll(decks)
         decks.minByOrNull { it.placement }!!
             .apply { winnerDeckRepository.save(WinnerDeck.of(this)) }
     }
 
-    fun saveIdSets(decks: List<Deck>) {
+    private fun saveIdSets(decks: List<Deck>) {
         val units = decks.flatMap { it.units }
 
         val season = decks.first().info.tft_set_core_name
@@ -75,7 +75,7 @@ class DataService(
         idSetRepository.saveAll(idSetsByType.values)
     }
 
-    fun saveStats(decks: List<Deck>) {
+    private fun saveStats(decks: List<Deck>) {
         val info = decks.first().info
         val tftStats = tftStatsRepository.findByGameVersion(info.game_version)
             ?: TftStats(

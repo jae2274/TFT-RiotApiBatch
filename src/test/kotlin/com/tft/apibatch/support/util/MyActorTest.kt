@@ -29,8 +29,8 @@ class MyActorTest {
         val divisor: Long,
     )
 
-    private val divideTask = { message: DivideMessage ->
-        Thread.sleep(breakTime)
+    private val divideTask: suspend (DivideMessage) -> Long = { message: DivideMessage ->
+        delay(breakTime)
         message.dividend / message.divisor
     }
 
