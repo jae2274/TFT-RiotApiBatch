@@ -15,7 +15,7 @@ sealed class Message<T, R> {
     class Stop<T, R>(val responseChannel: SendChannel<Boolean>) : Message<T, R>()
 }
 
-class MyActor<T, R>(
+open class MyActor<T, R>(
     private val processMessage: suspend (T) -> R, // 처리할 메시지를 인자로 받고 처리 결과를 반환하는 함수
 ) : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 

@@ -1,5 +1,6 @@
 package com.tft.apibatch.api
 
+import com.tft.apibatch.actor.ApiActor
 import com.tft.apibatch.config.JasyptConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -12,7 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 
 
 @ActiveProfiles("local")
-@SpringBootTest(classes = [RiotApiClient::class, ActorConfig::class, JasyptConfig::class])
+@SpringBootTest(classes = [RiotApiClient::class, ApiActor::class, JasyptConfig::class])
 class RiotApiClientTest(
     @Autowired
     private val riotApiClient: RiotApiClient,
