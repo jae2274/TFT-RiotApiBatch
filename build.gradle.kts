@@ -35,11 +35,15 @@ dependencies {
     testImplementation("org.springframework.batch:spring-batch-test")
     implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.3")
     implementation("net.gpedro.integrations.slack:slack-webhook:1.4.0")
-
+// https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.6")
 
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    // https://mvnrepository.com/artifact/org.mockito.kotlin/mockito-kotlin
+// https://mvnrepository.com/artifact/io.mockk/mockk
+    testImplementation("io.mockk:mockk:1.13.5")
 
 // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
