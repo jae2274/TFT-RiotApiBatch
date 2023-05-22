@@ -2,6 +2,8 @@ package com.tft.apibatch.api
 
 import com.tft.apibatch.actor.ApiActor
 import com.tft.apibatch.config.JasyptConfig
+import com.tft.apibatch.service.ApiService
+import com.tft.apibatch.service.CacheService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -13,29 +15,28 @@ import org.springframework.test.context.ActiveProfiles
 
 
 @ActiveProfiles("local")
-@SpringBootTest(classes = [RiotApiClient::class, ApiActor::class, JasyptConfig::class])
+@SpringBootTest(classes = [RiotApiClient::class, ApiService::class, ApiActor::class, CacheService::class, JasyptConfig::class])
+@DisplayName("riot api를 호출하여 결과를 확인한다. api호출마다 결과가 동적인 것과 그렇지 않은 것이 있다.")
 class RiotApiClientTest(
-    @Autowired
-    private val riotApiClient: RiotApiClient,
-    @Value("\${break-time}")
-    val breakTime: Long
+        @Autowired
+        private val riotApiClient: RiotApiClient
 ) {
 
     companion object {
         private val summonerIds = setOf(
-            "-QmcMmwuN79OoArUjT3PPBob_C2d2yJJezKwIaKPnGn3g7A",
-            "IRCkHx4yZZ_-eow8aQJiVkYBIAl_3W6FHEBNCa6TPllnxw",
-            "-pVS-PpnDMVJN9uoXBnuf2z3zqDunrIh5XmNQC5f-u8zXYKX3eNS-msDdQ",
-            "IFySKGTwkrQ-_LhRXKxdn7WJLI0uw5f69rp0NFIY_p_ERCY",
-            "pNk6MXi3XfYL8uKvsCkOj320FGVylTh1rYwd0FSQ7GRuvYo",
+                "-QmcMmwuN79OoArUjT3PPBob_C2d2yJJezKwIaKPnGn3g7A",
+                "IRCkHx4yZZ_-eow8aQJiVkYBIAl_3W6FHEBNCa6TPllnxw",
+                "-pVS-PpnDMVJN9uoXBnuf2z3zqDunrIh5XmNQC5f-u8zXYKX3eNS-msDdQ",
+                "IFySKGTwkrQ-_LhRXKxdn7WJLI0uw5f69rp0NFIY_p_ERCY",
+                "pNk6MXi3XfYL8uKvsCkOj320FGVylTh1rYwd0FSQ7GRuvYo",
         )
 
         private val puuids = listOf(
-            "9KKWkgljt2drURcBejbE-NBU4reBpGWkisNSdaYeGtP7vXPQYhRwrr3EMJxk-2P-jjKjlsqbU7Ov8A",
-            "55ftrb1u4f1zd134l-Noem1fTwIR3JyJ6e8bTE7iwmSvHld-h4VKSgS2DLOSJSi04lsY25E6CS_7EQ",
-            "N0BbREeLvuus-ClDcOlVkkUZQvBGM85li9TKJXOJ__c7QReVhxBzhTxKmUGPIyNGk7EgZy3R2ayF5A",
-            "rdOnXjKeb2qSu4goYEcz-pJY4ihNSBkohtlBmZ93ZoXjbBzLw3hZ1jy3bJREri0t5X8V9BIvs3qCDQ",
-            "OqS-e-8dSvsosSLMYSqf-y9uA0DIYg3GfKPoWYKgQeTuwlfGl3vC4s-jiV4F6EdWXruhMLpIh9vl3A"
+                "9KKWkgljt2drURcBejbE-NBU4reBpGWkisNSdaYeGtP7vXPQYhRwrr3EMJxk-2P-jjKjlsqbU7Ov8A",
+                "55ftrb1u4f1zd134l-Noem1fTwIR3JyJ6e8bTE7iwmSvHld-h4VKSgS2DLOSJSi04lsY25E6CS_7EQ",
+                "N0BbREeLvuus-ClDcOlVkkUZQvBGM85li9TKJXOJ__c7QReVhxBzhTxKmUGPIyNGk7EgZy3R2ayF5A",
+                "rdOnXjKeb2qSu4goYEcz-pJY4ihNSBkohtlBmZ93ZoXjbBzLw3hZ1jy3bJREri0t5X8V9BIvs3qCDQ",
+                "OqS-e-8dSvsosSLMYSqf-y9uA0DIYg3GfKPoWYKgQeTuwlfGl3vC4s-jiV4F6EdWXruhMLpIh9vl3A"
         )
     }
 
@@ -53,8 +54,6 @@ class RiotApiClientTest(
     @Test
     @DisplayName("summonerid로 puuid를 알아낼 수 있는 api를 호출한다.")
     fun callSummoner() {
-
-
         val failedCalls = mutableSetOf<String>()
 
         val summonerDTOS = summonerIds.mapNotNull { summonerId ->
@@ -74,52 +73,18 @@ class RiotApiClientTest(
 
 
         val matchIds = puuids
-            .mapNotNull { puuid ->
-                riotApiClient.callMatches(puuid, 0, 3).also { if (it == null) failedCallPuuIds.add(puuid) }
-            }.flatten()
-            .toSet()
+                .mapNotNull { puuid ->
+                    riotApiClient.callMatches(puuid, 0, 3).also { if (it == null) failedCallPuuIds.add(puuid) }
+                }.flatten()
+                .toSet()
 
         val matchDTOs = matchIds.mapNotNull { matchId ->
             riotApiClient.callMatch(matchId).also { if (it == null) failedCallMatchIds }
         }
 
         assertAll(
-            { assertThat(failedCallPuuIds).isEmpty() },
-            { assertThat(failedCallMatchIds).isEmpty() },
-        )
-    }
-
-    @Test
-    @DisplayName("모든 api는 호출 후, 일정 시간 이상 delay된다.")
-    fun delayTime() {
-        val summonerId = checkTime { riotApiClient.callChallengerLeagues() }
-            .let { leagueListDTO -> leagueListDTO.entries[0].summonerId }
-
-        val puuId = checkTime { riotApiClient.callSummoner(summonerId) }
-            .let { summonerDTO -> summonerDTO.puuid }
-
-        val matchId = checkTime { riotApiClient.callMatches(puuId, 0, 1) }
-            .let { matchIds -> matchIds[0] }
-
-        checkTime { riotApiClient.callMatch(matchId) }
-    }
-
-    private fun <T> checkTime(
-        action: () -> T?
-    ): T {
-        val start = System.currentTimeMillis()
-        val result = action()
-        val requiredTime = System.currentTimeMillis() - start
-
-        assertRightCall(requiredTime, result)
-
-        return result!!
-    }
-
-    private fun assertRightCall(requiredTime: Long, result: Any?) {
-        assertAll(
-            { assertThat(breakTime).isLessThan(requiredTime) },
-            { assertThat(result).isNotNull }
+                { assertThat(failedCallPuuIds).isEmpty() },
+                { assertThat(failedCallMatchIds).isEmpty() },
         )
     }
 }

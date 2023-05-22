@@ -46,7 +46,7 @@ class CacheTestForApiService {
             val (apiActor, cacheService, apiService) = createMocks()
             every { apiActor.process(request) } returns createReceiveChannel(expectedResponse)
 
-            val response = runBlocking { apiService.callApi(request, true) }
+            val response = apiService.callApi(request, true)
 
             Assertions.assertThat(response).isEqualTo(expectedResponse)
             verify(exactly = 1) { apiActor.process(any()) }
@@ -59,7 +59,7 @@ class CacheTestForApiService {
             val (apiActor, cacheService, apiService) = createMocks(request, expectedResponse)
             every { apiActor.process(request) } returns createReceiveChannel(expectedResponse)
 
-            val response = runBlocking { apiService.callApi(request, true) }
+            val response = apiService.callApi(request, true)
 
             Assertions.assertThat(response).isEqualTo(expectedResponse)
             verify(exactly = 0) { apiActor.process(any()) }
@@ -72,7 +72,7 @@ class CacheTestForApiService {
             val (apiActor, cacheService, apiService) = createMocks(request, expectedResponse)
             every { apiActor.process(anotherRequest) } returns createReceiveChannel(anotherExpectedResponse)
 
-            val response = runBlocking { apiService.callApi(anotherRequest, true) }
+            val response = apiService.callApi(anotherRequest, true)
 
             Assertions.assertThat(response).isEqualTo(anotherExpectedResponse)
             verify(exactly = 1) { apiActor.process(any()) }
@@ -88,7 +88,7 @@ class CacheTestForApiService {
             val (apiActor, cacheService, apiService) = createMocks()
             every { apiActor.process(request) } returns createReceiveChannel(expectedResponse)
 
-            val response = runBlocking { apiService.callApi(request, false) }
+            val response = apiService.callApi(request, false)
 
             Assertions.assertThat(response).isEqualTo(expectedResponse)
             verify(exactly = 1) { apiActor.process(any()) }
@@ -100,7 +100,7 @@ class CacheTestForApiService {
             val (apiActor, cacheService, apiService) = createMocks(request, expectedResponse)
             every { apiActor.process(request) } returns createReceiveChannel(expectedResponse)
 
-            val response = runBlocking { apiService.callApi(request, false) }
+            val response = apiService.callApi(request, false)
 
             Assertions.assertThat(response).isEqualTo(expectedResponse)
             verify(exactly = 1) { apiActor.process(any()) }
@@ -112,7 +112,7 @@ class CacheTestForApiService {
             val (apiActor, cacheService, apiService) = createMocks(request, expectedResponse)
             every { apiActor.process(anotherRequest) } returns createReceiveChannel(anotherExpectedResponse)
 
-            val response = runBlocking { apiService.callApi(anotherRequest, false) }
+            val response = apiService.callApi(anotherRequest, false)
 
             Assertions.assertThat(response).isEqualTo(anotherExpectedResponse)
             verify(exactly = 1) { apiActor.process(any()) }
