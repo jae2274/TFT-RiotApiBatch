@@ -16,10 +16,10 @@ sealed class Message<T, R> {
 }
 
 open class MyActor<T, R>(
-    private val processMessage: suspend (T) -> R, // 처리할 메시지를 인자로 받고 처리 결과를 반환하는 함수
+        private val processMessage: suspend (T) -> R, // 처리할 메시지를 인자로 받고 처리 결과를 반환하는 함수
 ) : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
-    private val channel = Channel<Message<T, R>>()
+    private val channel = Channel<Message<T, R>>(Channel.UNLIMITED)
 
     init {
         launch {
@@ -30,7 +30,7 @@ open class MyActor<T, R>(
                             val response = processMessage(message.message)
 
                             message.responseChannel.send(
-                                Result.success(response)
+                                    Result.success(response)
                             )
                         } catch (e: Exception) {
                             message.responseChannel.send(Result.failure(e))
@@ -39,7 +39,7 @@ open class MyActor<T, R>(
 
                     is Message.Stop -> {
                         message.responseChannel.send(
-                            channel.close()
+                                channel.close()
                         )
 
                         break
@@ -60,7 +60,7 @@ open class MyActor<T, R>(
     }
 
     fun process(message: T): ReceiveChannel<Result<R>> {
-        val responseChannel = Channel<Result<R>>()
+        val responseChannel = Channel<Result<R>>(1)
         launch {
             val process = Message.Process(message, responseChannel)
             try {
