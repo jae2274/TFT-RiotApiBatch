@@ -28,7 +28,7 @@ class RiotApiClient(
             jacksonObjectMapper().registerKotlinModule().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
 
-    fun callChallengerLeagues(): LeagueListDTO? {
+    fun callChallengerLeagues(): LeagueListDTO {
         val request = ApiRequest(
                 method = HttpMethod.GET,
                 url = "$krApiUrl/tft/league/v1/challenger",
@@ -41,7 +41,7 @@ class RiotApiClient(
                 }
     }
 
-    fun callSummoner(summerId: String): SummonerDTO? {
+    fun callSummoner(summerId: String): SummonerDTO {
 
         val request = ApiRequest(
                 method = HttpMethod.GET,
@@ -51,12 +51,12 @@ class RiotApiClient(
         )
 
         return apiService.callApi(request, true)
-                ?.let {
+                .let {
                     objectMapper.readValue(it, SummonerDTO::class.java)
                 }
     }
 
-    fun callMatches(puuid: String, start: Int, count: Int): List<String>? {
+    fun callMatches(puuid: String, start: Int, count: Int): List<String> {
         val request = ApiRequest(
                 method = HttpMethod.GET,
                 url = "$asiaApiUrl/tft/match/v1/matches/by-puuid/{puuid}/ids",
@@ -66,14 +66,14 @@ class RiotApiClient(
         )
 
         return apiService.callApi(request, false)
-                ?.let {
+                .let {
                     val javaType =
                             TypeFactory.defaultInstance().constructCollectionType(List::class.java, String::class.java)
                     objectMapper.readValue(it, javaType)
                 }
     }
 
-    fun callMatch(matchId: String): MatchDTO? {
+    fun callMatch(matchId: String): MatchDTO {
         val request = ApiRequest(
                 method = HttpMethod.GET,
                 url = "$asiaApiUrl/tft/match/v1/matches/{matchId}",
@@ -82,7 +82,7 @@ class RiotApiClient(
         )
 
         return apiService.callApi(request, true)
-                ?.let {
+                .let {
                     objectMapper.readValue(it, MatchDTO::class.java)
                 }
     }
