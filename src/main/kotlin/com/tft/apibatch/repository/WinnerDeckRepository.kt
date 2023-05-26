@@ -1,6 +1,6 @@
 package com.tft.apibatch.repository
 
-import com.tft.apibatch.entry.WinnerDeck
+import com.tft.apibatch.entity.WinnerDeck
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.data.mongodb.repository.Query
 

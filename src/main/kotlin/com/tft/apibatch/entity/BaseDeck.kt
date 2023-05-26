@@ -1,4 +1,4 @@
-package com.tft.apibatch.entry
+package com.tft.apibatch.entity
 
 import com.tft.apibatch.api.dto.MatchDTO
 

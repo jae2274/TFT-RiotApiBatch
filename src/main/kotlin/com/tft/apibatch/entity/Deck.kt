@@ -1,4 +1,4 @@
-package com.tft.apibatch.entry
+package com.tft.apibatch.entity
 
 import com.tft.apibatch.api.dto.MatchDTO
 import org.springframework.data.annotation.Id
@@ -40,6 +40,36 @@ data class Deck(
                 augments = participant.augments,
             )
         }
+
+
     }
 }
+
+fun Collection<Deck>.checkAllSameSeason() {
+    this.map { it.info.tft_set_core_name }.distinct()
+        .also { check(it.size == 1) { "deck contains multiple season $it" } }
+    this.map { it.info.tft_set_number }.distinct()
+        .also { check(it.size == 1) { "deck contains multiple seasonNumber $it" } }
+}
+
+fun Collection<Deck>.checkValidSeason(season: String, seasonNumber: Int) {
+    checkAllSameSeason()
+    this.map { it.info.tft_set_core_name }
+        .also { check(it[0] == season) { "different season: ${it[0]}, $season" } }
+
+    this.map { it.info.tft_set_number }
+        .also { check(it[0] == seasonNumber) { "different seasonNumber: ${it[0]}, $season" } }
+}
+
+fun Collection<Deck>.checkAllSameVersion() {
+    this.map { it.info.game_version }.distinct()
+        .also { check(it.size == 1) { "deck contains multiple version $it" } }
+}
+
+fun Collection<Deck>.checkValidGameVersion(gameVersion: String) {
+    checkAllSameVersion()
+    this.map { it.info.game_version }
+        .also { check(it[0] == gameVersion) { "different version:  ${it[0]}, $gameVersion" } }
+}
+
 

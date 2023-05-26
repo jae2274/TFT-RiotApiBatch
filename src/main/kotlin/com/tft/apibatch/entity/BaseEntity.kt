@@ -1,4 +1,4 @@
-package com.tft.apibatch.entry
+package com.tft.apibatch.entity
 
 import org.springframework.data.annotation.CreatedDate
 import java.time.LocalDateTime
