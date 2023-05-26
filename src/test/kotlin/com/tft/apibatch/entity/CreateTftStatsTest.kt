@@ -1,60 +1,40 @@
 package com.tft.apibatch.entity
 
-import com.tft.apibatch.repository.DeckRepository
+import com.tft.apibatch.api.MatchFixture
 import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.data.mongodb.repository.MongoRepository
-import org.springframework.data.mongodb.repository.Query
-import org.springframework.stereotype.Repository
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 
+class CreateTftStatsTest {
 
-@Repository
-interface DeckRepositoryForTest : MongoRepository<Deck, String> {
-    @Query("{'info.game_version': ?0}")
-    fun findTop20ByInfo_Game_version(gameVersion: String, pageable: Pageable): List<Deck>
-}
+    private lateinit var decks: List<Deck>
 
-@ExtendWith(SpringExtension::class)
-@DataMongoTest
-@ActiveProfiles("local")
-class TftStatsUtilTest(
-//    private val deckRepository: DeckRepositoryForTest
-) {
-    @Autowired
-    private lateinit var deckRepository: DeckRepositoryForTest
+    @BeforeEach
+    fun init() {
+        decks = MatchFixture.matchDTOs
+            .flatMap { Deck.listOf(it) }
+    }
 
     @Test
+    @DisplayName("deck 리스트로 TftStats 객체를 생성 후, 이전 로직으로 생성된 객체와 비교한다.")
     fun test() {
-        val season = "TFTSet8_2"
-        val seasonNumber = 8
-        val gameVersion = "Version 13.9.506.4846 (Apr 28 2023/10:09:23) [PUBLIC] <Releases/13.9>"
-
-        val decks =
-//            deckRepository.findAll()
-            deckRepository.findTop20ByInfo_Game_version(gameVersion, PageRequest.of(0, 20))
-
-        val beforeTftStats = TftStats(
-            season = season,
-            seasonNumber = seasonNumber,
-            gameVersion = gameVersion
-        ).also { it.beforeRefactorLogic(decks) }
 
 
-        val decks2 =
-//            deckRepository.findAll()
-            deckRepository.findTop20ByInfo_Game_version(gameVersion, PageRequest.of(0, 20))
-        val afterTftStats = TftStats.of(season, seasonNumber, gameVersion, decks2)
+        val afterTftStatsList = TftStats.listOf(decks)
+        val beforeTftStatsList =
+            decks.groupBy { Triple(it.info.tft_set_core_name, it.info.tft_set_number, it.info.game_version) }
+                .map { deckEntry ->
+                    val (season, seasonNumber, gameVersion) = deckEntry.key
+                    TftStats(
+                        season = season,
+                        seasonNumber = seasonNumber,
+                        gameVersion = gameVersion,
 
-        Assertions.assertThat(afterTftStats).isEqualTo(beforeTftStats)
+                        ).also { it.beforeRefactorLogic(deckEntry.value) }
+                }
+
+        Assertions.assertThat(afterTftStatsList).isEqualTo(beforeTftStatsList)
     }
 }
 

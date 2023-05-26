@@ -1,10 +1,9 @@
 package com.tft.apibatch.entity
 
 import org.junit.jupiter.api.Test
-import com.tft.apibatch.entity.TFTStatsFixture.*
 import org.assertj.core.api.Assertions
 
-class TftStatsTest {
+class AddTftStatsTest {
 
     @Test
     fun addChampions() {
