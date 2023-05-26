@@ -10,16 +10,16 @@ import org.springframework.stereotype.Component
 
 @Component
 class ApiService(
-        private val cacheService: CacheService,
-        private val apiActor: MyActor<ApiRequest, String?>,
+    private val cacheService: CacheService,
+    private val apiActor: MyActor<ApiRequest, String?>,
 ) {
 
     fun callApi(request: ApiRequest, isCaching: Boolean): String {
         return runBlocking {
             if (isCaching) {
                 cacheService.getIfPresent(request)
-                        ?: apiActor.process(request).receive().getOrThrow()!!
-                                .also { cacheService.put(request, it) }
+                    ?: apiActor.process(request).receive().getOrThrow()!!
+                        .also { cacheService.put(request, it) }
             } else {
                 apiActor.process(request).receive().getOrThrow()!!
             }

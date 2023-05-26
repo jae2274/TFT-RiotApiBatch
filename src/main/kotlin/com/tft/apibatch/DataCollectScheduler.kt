@@ -2,6 +2,10 @@ package com.tft.apibatch
 
 import com.tft.apibatch.api.RiotApiClient
 import com.tft.apibatch.api.dto.MatchDTO
+import com.tft.apibatch.entity.Deck
+import com.tft.apibatch.entity.IdSet
+import com.tft.apibatch.entity.TftStats
+import com.tft.apibatch.entity.listOf
 import com.tft.apibatch.service.DataService
 import com.tft.apibatch.support.util.SlackUtil
 import org.springframework.scheduling.annotation.Scheduled
@@ -16,18 +20,27 @@ class DataCollectScheduler(
 
     @Scheduled(fixedDelay = 1000)
     fun collect() {
-        sequenceFromApi()
-            .forEach {
-                try {
-                    dataService.saveData(it)
-                } catch (e: Exception) {
-                    slackUtil.sendSlackMessage(e)
-                }
-            }
+        try {
+            sequenceMatchDTOFromApi()
+                .forEach { matchDTO ->
+                    if (!dataService.isAlreadyHas(matchDTO.metadata.match_id)) {
+                        val decks = Deck.listOf(matchDTO)
+                        val idSets = IdSet.listOf(decks)
+                        val tftStatsList = TftStats.listOf(decks)
 
+                        dataService.saveDecks(decks)
+                        dataService.saveIdSets(idSets)
+                        dataService.saveTftStats(tftStatsList)
+                    }
+                }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            slackUtil.sendSlackMessage(e)
+        }
     }
 
-    fun sequenceFromApi(): Sequence<MatchDTO> {
+
+    fun sequenceMatchDTOFromApi(): Sequence<MatchDTO> {
         return apiClient.callChallengerLeagues().entries
             .asSequence()
             .map { apiClient.callSummoner(it.summonerId) }
