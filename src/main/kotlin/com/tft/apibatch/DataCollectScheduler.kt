@@ -44,7 +44,7 @@ class DataCollectScheduler(
         return apiClient.callChallengerLeagues().entries
             .asSequence()
             .map { apiClient.callSummoner(it.summonerId) }
-            .flatMap { apiClient.callMatches(it.puuid, 0, 100) }
+            .flatMap { apiClient.callMatches(it.puuid, 0, 30) }
             .map { matchId -> apiClient.callMatch(matchId) }
     }
 }
