@@ -9,29 +9,29 @@ import org.springframework.stereotype.Component
 
 @Component
 class DataCollectScheduler(
-        private val apiClient: RiotApiClient,
-        private val dataService: DataService,
-        private val slackUtil: SlackUtil,
+    private val apiClient: RiotApiClient,
+    private val dataService: DataService,
+    private val slackUtil: SlackUtil,
 ) {
 
     @Scheduled(fixedDelay = 1000)
     fun collect() {
         sequenceFromApi()
-                .forEach {
-                    try {
-                        dataService.saveData(it)
-                    } catch (e: Exception) {
-                        slackUtil.sendSlackMessage(e)
-                    }
+            .forEach {
+                try {
+                    dataService.saveData(it)
+                } catch (e: Exception) {
+                    slackUtil.sendSlackMessage(e)
                 }
+            }
 
     }
 
     fun sequenceFromApi(): Sequence<MatchDTO> {
         return apiClient.callChallengerLeagues().entries
-                .asSequence()
-                .map { apiClient.callSummoner(it.summonerId) }
-                .flatMap { apiClient.callMatches(it.puuid, 0, 400) }
-                .map { matchId -> apiClient.callMatch(matchId) }
+            .asSequence()
+            .map { apiClient.callSummoner(it.summonerId) }
+            .flatMap { apiClient.callMatches(it.puuid, 0, 100) }
+            .map { matchId -> apiClient.callMatch(matchId) }
     }
 }
