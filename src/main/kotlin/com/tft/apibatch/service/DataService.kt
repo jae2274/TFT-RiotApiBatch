@@ -45,4 +45,8 @@ class DataService(
             }
             .let { tftStatsRepository.saveAll(it) }
     }
+
+    fun findLastSavedDeck(): WinnerDeck =
+        winnerDeckRepository.findTopByOrderByCreatedAtDesc()
+
 }
