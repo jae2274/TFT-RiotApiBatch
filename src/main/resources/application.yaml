@@ -21,3 +21,6 @@ logging:
           mongodb:
             core:
               MongoTemplate: DEBUG
+spring:
+  main:
+    web-application-type: none
