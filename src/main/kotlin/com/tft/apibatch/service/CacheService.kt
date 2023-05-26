@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 @Component
 class CacheService {
     private val cache = Caffeine.newBuilder()
-        .expireAfterAccess(2, TimeUnit.HOURS)
+        .expireAfterAccess(1, TimeUnit.HOURS)
         .build<ApiRequest, String?>()
 
     fun getIfPresent(request: ApiRequest): String? {
