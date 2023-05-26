@@ -4,6 +4,7 @@ import com.tft.apibatch.entity.WinnerDeck
 import com.tft.apibatch.service.DataService
 import com.tft.apibatch.support.util.SlackUtil
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -14,7 +15,7 @@ class HealthCheckController(
     private val dataService: DataService,
     private val slackUtil: SlackUtil,
 ) {
-    @GetMapping
+    @PostMapping
     fun healthCheck(): WinnerDeck {
         return dataService.findLastSavedDeck()
             .also {
