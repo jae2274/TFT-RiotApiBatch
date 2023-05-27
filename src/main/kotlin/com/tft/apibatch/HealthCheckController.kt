@@ -19,7 +19,7 @@ class HealthCheckController(
     fun healthCheck(): WinnerDeck {
         return dataService.findLastSavedDeck()
             .also {
-                if (LocalDateTime.now() > it.createdAt.plusSeconds(1))
+                if (LocalDateTime.now() > it.createdAt.plusMinutes(3))
                     slackUtil.sendSlackMessage(NotCollectedStatusException(it.createdAt))
             }
     }
