@@ -46,7 +46,7 @@ class DataCollectScheduler(
         return callSummonerEntries()
             .asSequence()
             .map { apiClient.callSummoner(it.summonerId) }
-            .flatMap { apiClient.callMatches(it.puuid, 0, 30) }
+            .flatMap { apiClient.callMatches(it.puuid, 0, 200) }
             .map { matchId -> apiClient.callMatch(matchId) }
     }
 
