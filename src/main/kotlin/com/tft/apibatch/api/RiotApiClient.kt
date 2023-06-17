@@ -27,10 +27,10 @@ class RiotApiClient(
         jacksonObjectMapper().registerKotlinModule().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
 
-    fun callChallengerLeagues(): LeagueListDTO {
+    fun callSummoners(tier: SummonerTier): LeagueListDTO {
         val request = ApiRequest(
             method = HttpMethod.GET,
-            url = "$krApiUrl/tft/league/v1/challenger",
+            url = "$krApiUrl/tft/league/v1/$tier",
             headers = listOf(Pair("X-Riot-Token", apiToken))
         )
 
@@ -85,4 +85,8 @@ class RiotApiClient(
                 objectMapper.readValue(it, MatchDTO::class.java)
             }
     }
+}
+
+enum class SummonerTier {
+    challenger, grandmaster, master
 }
