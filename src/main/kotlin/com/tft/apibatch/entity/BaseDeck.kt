@@ -71,7 +71,7 @@ abstract class BaseDeck : BaseEntity() {
             private fun of(unit: MatchDTO.UnitDTO): Unit {
                 return Unit(
                     items = unit.items,
-                    itemNames = unit.itemNames,
+                    itemNames = unit.itemNames ?: emptyList(),
                     character_id = unit.character_id,
                     chosen = unit.chosen,
                     name = unit.name,

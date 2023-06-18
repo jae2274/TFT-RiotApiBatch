@@ -43,7 +43,7 @@ data class MatchDTO(
 
     data class UnitDTO(
         var items: List<Int>?,
-        var itemNames: List<String>,
+        var itemNames: List<String>?,
         var character_id: String,
         var chosen: String?,
         var name: String?,
