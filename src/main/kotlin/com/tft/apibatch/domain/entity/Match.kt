@@ -12,7 +12,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 data class Match(
     @get:DynamoDbPartitionKey
     var matchId: String,
-    @get:DynamoDbSortKey
+    @get:DynamoDbAttribute("createdAt")
     var createdAt: Long,
 ) : DynamoDBEntity {
     companion object {

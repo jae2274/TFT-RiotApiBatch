@@ -1,5 +1,6 @@
 package com.tft.apibatch.config
 
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,6 +17,26 @@ class DynamoDBConfig(
     private val endpoint: String?
 ) {
 
+
     @Bean
-    fun dynamoDbEnhancedClient(): DynamoDbEnhancedClient = DynamoDbEnhancedClient.create()
+    fun dynamoDbClient(): DynamoDbClient {
+        return if (endpoint != null && endpoint.isNotBlank())
+            DynamoDbClient.builder()
+                .endpointOverride(URI(endpoint))
+                .build()
+        else
+            DynamoDbClient.builder()
+                .build()
+    }
+
+    @Bean
+    fun dynamoDbEnhancedClient(
+        @Qualifier("dynamoDbClient")
+        dynamoDbClient: DynamoDbClient
+    ): DynamoDbEnhancedClient =
+        DynamoDbEnhancedClient.builder()
+            .dynamoDbClient(dynamoDbClient)
+            .build()
+
+
 }

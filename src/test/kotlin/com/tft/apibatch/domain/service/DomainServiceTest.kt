@@ -10,13 +10,15 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 
 
-@SpringBootTest(classes = [DomainService::class, SummonerRepository::class, MatchRepository::class, DynamoDBConfig::class])
-class DomainServiceTest : DynamoDBTest() {
+@SpringBootTest
+@ActiveProfiles("local")
+class DomainServiceTest(
     @Autowired
-    private lateinit var domainService: DomainService
-
+    private var domainService: DomainService
+) : DynamoDBTest() {
     @Nested
     inner class TestSummoner {
         @Test

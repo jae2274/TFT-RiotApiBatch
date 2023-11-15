@@ -18,7 +18,7 @@ data class Summoner(
     var summonerId: String,
     @get:DynamoDbAttribute("puuid")
     var puuid: String,
-    @get:DynamoDbSortKey
+    @get:DynamoDbAttribute("createdAt")
     var createdAt: Long,
 ) : DynamoDBEntity {
     companion object {
