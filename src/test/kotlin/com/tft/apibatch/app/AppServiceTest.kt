@@ -1,4 +1,4 @@
-package com.tft.apibatch.service
+package com.tft.apibatch.app
 
 import com.tft.apibatch.DynamoDBTest
 import com.tft.apibatch.api.RiotApiClient

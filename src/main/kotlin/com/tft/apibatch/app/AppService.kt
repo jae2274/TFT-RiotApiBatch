@@ -1,4 +1,4 @@
-package com.tft.apibatch.service
+package com.tft.apibatch.app
 
 import com.tft.apibatch.api.RiotApiClient
 import com.tft.apibatch.api.SummonerTier
@@ -29,10 +29,10 @@ class AppService(
     }
 
 
-    suspend fun getMatchIds(puuid: String, start: Int, count: Int): Sequence<String> {
+    suspend fun getMatchIds(puuid: String, start: Int, count: Int): List<String> {
         val matchIds = apiClient.getMatchIds(puuid, start, count)
 
-        return matchService.excludeExistedMatchIds(matchIds).asSequence()
+        return matchService.excludeExistedMatchIds(matchIds)
     }
 
     suspend fun getMatch(matchId: String): String {
