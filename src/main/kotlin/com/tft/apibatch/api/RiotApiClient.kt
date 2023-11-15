@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.tft.apibatch.actor.ApiActor
 import com.tft.apibatch.actor.ApiRequest
-import com.tft.apibatch.api.dto.LeagueListDTO
-import com.tft.apibatch.api.dto.MatchDTO
-import com.tft.apibatch.api.dto.SummonerDTO
-import com.tft.apibatch.service.ApiService
+import com.tft.apibatch.api.dto.LeagueListResponse
+import com.tft.apibatch.api.dto.SummonerResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
@@ -21,26 +20,26 @@ class RiotApiClient(
     private val krApiUrl: String,
     @Value("\${api-token}")
     val apiToken: String,
-    val apiService: ApiService,
+    val apiActor: ApiActor,
 ) {
     private val objectMapper =
         jacksonObjectMapper().registerKotlinModule().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
 
-    fun callSummoners(tier: SummonerTier): LeagueListDTO {
+    suspend fun getSummoners(tier: SummonerTier): LeagueListResponse {
         val request = ApiRequest(
             method = HttpMethod.GET,
             url = "$krApiUrl/tft/league/v1/$tier",
             headers = listOf(Pair("X-Riot-Token", apiToken))
         )
 
-        return apiService.callApi(request, false)
+        return apiActor.callApi(request)
             .let {
-                objectMapper.readValue(it, LeagueListDTO::class.java)
+                objectMapper.readValue(it, LeagueListResponse::class.java)
             }
     }
 
-    fun callSummoner(summerId: String): SummonerDTO {
+    suspend fun getPuuid(summerId: String): SummonerResponse {
 
         val request = ApiRequest(
             method = HttpMethod.GET,
@@ -49,13 +48,13 @@ class RiotApiClient(
             headers = listOf(Pair("X-Riot-Token", apiToken))
         )
 
-        return apiService.callApi(request, true)
+        return apiActor.callApi(request)
             .let {
-                objectMapper.readValue(it, SummonerDTO::class.java)
+                objectMapper.readValue(it, SummonerResponse::class.java)
             }
     }
 
-    fun callMatches(puuid: String, start: Int, count: Int): List<String> {
+    suspend fun getMatchIds(puuid: String, start: Int, count: Int): List<String> {
         val request = ApiRequest(
             method = HttpMethod.GET,
             url = "$asiaApiUrl/tft/match/v1/matches/by-puuid/{puuid}/ids",
@@ -64,7 +63,7 @@ class RiotApiClient(
             headers = listOf(Pair("X-Riot-Token", apiToken))
         )
 
-        return apiService.callApi(request, false)
+        return apiActor.callApi(request)
             .let {
                 val javaType =
                     TypeFactory.defaultInstance().constructCollectionType(List::class.java, String::class.java)
@@ -72,7 +71,7 @@ class RiotApiClient(
             }
     }
 
-    fun callMatch(matchId: String): MatchDTO {
+    suspend fun getMatch(matchId: String): String {
         val request = ApiRequest(
             method = HttpMethod.GET,
             url = "$asiaApiUrl/tft/match/v1/matches/{matchId}",
@@ -80,10 +79,7 @@ class RiotApiClient(
             headers = listOf(Pair("X-Riot-Token", apiToken))
         )
 
-        return apiService.callApi(request, true)
-            .let {
-                objectMapper.readValue(it, MatchDTO::class.java)
-            }
+        return apiActor.callApi(request)
     }
 }
 

@@ -1,9 +1,7 @@
 package com.tft.apibatch.api
 
 import com.tft.apibatch.actor.ApiActor
-import com.tft.apibatch.config.JasyptConfig
-import com.tft.apibatch.service.ApiService
-import com.tft.apibatch.service.CacheService
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -14,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles
 
 
 @ActiveProfiles("local")
-@SpringBootTest(classes = [RiotApiClient::class, ApiService::class, ApiActor::class, CacheService::class, JasyptConfig::class])
+@SpringBootTest(classes = [RiotApiClient::class, ApiActor::class])
 @DisplayName("riot api를 호출하여 결과를 확인한다. api호출마다 결과가 동적인 것과 그렇지 않은 것이 있다.")
 class RiotApiClientTest(
     @Autowired
@@ -41,8 +39,8 @@ class RiotApiClientTest(
 
     @Test
     @DisplayName("챌린저 랭커의 summonerid 목록 api를 호출한다.")
-    fun callChallengerLeagues() {
-        val leagueListDTO = riotApiClient.callSummoners(SummonerTier.challenger)
+    fun callChallengerLeagues() = runTest {
+        val leagueListDTO = riotApiClient.getSummoners(SummonerTier.challenger)
 
         assertThat(leagueListDTO).isNotNull
         checkNotNull(leagueListDTO)
@@ -52,33 +50,32 @@ class RiotApiClientTest(
 
     @Test
     @DisplayName("summonerid로 puuid를 알아낼 수 있는 api를 호출한다.")
-    fun callSummoner() {
+    fun callSummoner() = runTest {
         val failedCalls = mutableSetOf<String>()
 
         val summonerDTOS = summonerIds.mapNotNull { summonerId ->
-            riotApiClient.callSummoner(summonerId).also { if (it == null) failedCalls.add(summonerId) }
+            riotApiClient.getPuuid(summonerId).also { if (it == null) failedCalls.add(summonerId) }
         }
 
         assertThat(failedCalls).isEmpty()
         assertThat(summonerDTOS.map { it.puuid }).isEqualTo(puuids)
-
     }
 
     @Test
     @DisplayName("puuid로 matchid를 알아낼 api를 호출 후, matchid로 경기데이터api를 호출한다.")
-    fun callMatches() {
+    fun callMatches() = runTest {
         val failedCallPuuIds = mutableSetOf<String>()
         val failedCallMatchIds = mutableSetOf<String>()
 
 
         val matchIds = puuids
             .mapNotNull { puuid ->
-                riotApiClient.callMatches(puuid, 0, 3).also { if (it == null) failedCallPuuIds.add(puuid) }
+                riotApiClient.getMatchIds(puuid, 0, 3).also { if (it == null) failedCallPuuIds.add(puuid) }
             }.flatten()
             .toSet()
 
         val matchDTOs = matchIds.mapNotNull { matchId ->
-            riotApiClient.callMatch(matchId).also { if (it == null) failedCallMatchIds }
+            riotApiClient.getMatch(matchId).also { if (it == null) failedCallMatchIds }
         }
 
         assertAll(

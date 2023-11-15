@@ -9,6 +9,21 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
+data class DivideMessage(
+    val dividend: Long,
+    val divisor: Long,
+)
+
+suspend fun divideTask(message: DivideMessage): Long {
+    delay(MyActorTest.breakTime)
+    return message.dividend / message.divisor
+}
+
+class DivideActor : MyActor<DivideMessage, Long>() {
+    override suspend fun processMessage(message: DivideMessage): Long = divideTask(message)
+
+}
+
 class MyActorTest {
 
     companion object {
@@ -24,17 +39,8 @@ class MyActorTest {
         )
     }
 
-    data class DivideMessage(
-        val dividend: Long,
-        val divisor: Long,
-    )
 
-    private val divideTask: suspend (DivideMessage) -> Long = { message: DivideMessage ->
-        delay(breakTime)
-        message.dividend / message.divisor
-    }
-
-    private val actor: MyActor<DivideMessage, Long> = MyActor(divideTask)
+    private val actor: DivideActor = DivideActor()
 
 
     @Test

@@ -1,13 +1,17 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.7.5"
+    id("org.springframework.boot") version "3.1.0"
     id("io.spring.dependency-management") version "1.0.15.RELEASE"
-    kotlin("jvm") version "1.6.21"
-    kotlin("plugin.spring") version "1.6.21"
-    kotlin("kapt") version "1.6.21"
+    kotlin("jvm") version "1.8.21"
+    kotlin("plugin.spring") version "1.8.21"
+    kotlin("kapt") version "1.8.21"
+    kotlin("plugin.noarg") version "1.8.21"
 }
 
+noArg {
+    annotation("software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean")
+}
 
 
 group = "com.tft"
@@ -17,15 +21,14 @@ java.sourceCompatibility = JavaVersion.VERSION_18
 repositories {
     mavenCentral()
 }
-allOpen {
-    annotation("org.springframework.data.mongodb.core.mapping.Document")
-}
 
 extra["springCloudVersion"] = "2021.0.4"
 
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation(platform("software.amazon.awssdk:bom:2.20.56"))
+    implementation("software.amazon.awssdk:dynamodb-enhanced:2.20.56")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -35,18 +38,14 @@ dependencies {
     testImplementation("org.springframework.batch:spring-batch-test")
     implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.3")
     implementation("net.gpedro.integrations.slack:slack-webhook:1.4.0")
-// https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
-    implementation("com.github.ben-manes.caffeine:caffeine:3.1.6")
 
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    // https://mvnrepository.com/artifact/org.mockito.kotlin/mockito-kotlin
-// https://mvnrepository.com/artifact/io.mockk/mockk
     testImplementation("io.mockk:mockk:1.13.5")
 
 // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.6.4")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-webflux
     implementation("org.springframework.boot:spring-boot-starter-webflux")

@@ -1,7 +1,7 @@
 package com.tft.apibatch.api.dto
 
 
-data class MatchDTO(
+data class MatchResponse(
     val metadata: MetadataDTO,
     val info: InfoDTO,
 ) {
