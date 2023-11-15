@@ -2,24 +2,26 @@ package com.tft.apibatch.service
 
 import com.tft.apibatch.api.RiotApiClient
 import com.tft.apibatch.api.SummonerTier
-import com.tft.apibatch.domain.service.DomainService
+import com.tft.apibatch.domain.service.MatchService
+import com.tft.apibatch.domain.service.SummonerService
 import org.springframework.stereotype.Service
 
 @Service
 class AppService(
     private val apiClient: RiotApiClient,
-    private val domainService: DomainService
+    private val summonerService: SummonerService,
+    private val matchService: MatchService,
 ) {
     suspend fun getSummonerIds(needSummonerCount: Int): List<String> {
         return getSummonerIdsEntry(needSummonerCount).take(needSummonerCount)
     }
 
     suspend fun getPuuids(summonerIds: Iterable<String>): List<String> {
-        val existedSummonersDTO = domainService.getExistedSummoners(summonerIds)
+        val existedSummonersDTO = summonerService.getExistedSummoners(summonerIds)
 
         val newSummoners = existedSummonersDTO.newSummonerIds.map { newSummonerId ->
-            apiClient.getPuuid(newSummonerId)
-                .let { domainService.saveSummoner(newSummonerId, it.puuid) }
+            val puuid = apiClient.getSummoner(newSummonerId).puuid
+            summonerService.saveSummoner(newSummonerId, puuid)
         }
 
         return (newSummoners + existedSummonersDTO.existedSummoners)
@@ -30,7 +32,7 @@ class AppService(
     suspend fun getMatchIds(puuid: String, start: Int, count: Int): Sequence<String> {
         val matchIds = apiClient.getMatchIds(puuid, start, count)
 
-        return domainService.excludeExistedMatchIds(matchIds).asSequence()
+        return matchService.excludeExistedMatchIds(matchIds).asSequence()
     }
 
     suspend fun getMatch(matchId: String): String {

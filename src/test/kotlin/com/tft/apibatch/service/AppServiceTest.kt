@@ -1,14 +1,12 @@
 package com.tft.apibatch.service
 
+import com.tft.apibatch.DynamoDBTest
 import com.tft.apibatch.api.RiotApiClient
-import com.tft.apibatch.domain.service.DomainService
+import com.tft.apibatch.domain.service.MatchService
+import com.tft.apibatch.domain.service.SummonerService
 import io.mockk.coVerify
-import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.spyk
-import io.mockk.verify
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions
@@ -25,11 +23,14 @@ import org.springframework.test.context.ActiveProfiles
 @SpringBootTest
 @ActiveProfiles("local")
 @ExtendWith(MockKExtension::class)
-class AppServiceTest {
+class AppServiceTest : DynamoDBTest() {
 
     @Autowired
-    private lateinit var domainService: DomainService
-    private lateinit var domainServiceSpy: DomainService
+    private lateinit var domainService: SummonerService
+    private lateinit var summonerServiceSpy: SummonerService
+
+    @Autowired
+    private lateinit var matchService: MatchService
 
     @Autowired
     private lateinit var apiClient: RiotApiClient
@@ -40,9 +41,9 @@ class AppServiceTest {
     @PostConstruct
     fun postConstruct() {
         apiClientSpy = spyk(apiClient)
-        domainServiceSpy = spyk(domainService)
+        summonerServiceSpy = spyk(domainService)
 
-        appService = AppService(apiClientSpy, domainServiceSpy)
+        appService = AppService(apiClientSpy, summonerServiceSpy, matchService)
     }
 
     @Test
@@ -68,8 +69,8 @@ class AppServiceTest {
         Assertions.assertThat(puuids).hasSize(5)
 
         summonerIds.forEach {
-            coVerify(exactly = 5) { apiClientSpy.getPuuid(it) }
-            coVerify(exactly = 5) { domainServiceSpy.saveSummoner(it, any()) }
+            coVerify(exactly = 1) { apiClientSpy.getSummoner(it) }
+            coVerify(exactly = 1) { summonerServiceSpy.saveSummoner(it, any()) }
         }
     }
 }

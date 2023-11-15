@@ -54,7 +54,7 @@ class RiotApiClientTest(
         val failedCalls = mutableSetOf<String>()
 
         val summonerDTOS = summonerIds.mapNotNull { summonerId ->
-            riotApiClient.getPuuid(summonerId).also { if (it == null) failedCalls.add(summonerId) }
+            riotApiClient.getSummoner(summonerId).also { if (it == null) failedCalls.add(summonerId) }
         }
 
         assertThat(failedCalls).isEmpty()

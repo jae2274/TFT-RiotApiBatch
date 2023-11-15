@@ -39,7 +39,7 @@ class RiotApiClient(
             }
     }
 
-    suspend fun getPuuid(summerId: String): SummonerResponse {
+    suspend fun getSummoner(summerId: String): SummonerResponse {
 
         val request = ApiRequest(
             method = HttpMethod.GET,

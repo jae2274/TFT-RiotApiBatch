@@ -12,9 +12,8 @@ data class ExistedSummonersDTO(
 )
 
 @Service
-class DomainService(
+class SummonerService(
     private val summonerRepository: SummonerRepository,
-    private val matchIdRepository: MatchRepository
 ) {
     fun getExistedSummoners(summonerIds: Iterable<String>): ExistedSummonersDTO {
         val summoners = summonerRepository.findAllById(summonerIds)
@@ -28,12 +27,4 @@ class DomainService(
     fun saveSummoner(summonerId: String, puuid: String): Summoner =
         summonerRepository.save(Summoner(summonerId = summonerId, puuid = puuid, System.currentTimeMillis()))
 
-    fun excludeExistedMatchIds(matchIds: Iterable<String>): List<String> {
-        val existedMatchIds = matchIdRepository.findAllById(matchIds).map { it.matchId }
-
-        return matchIds - existedMatchIds.toSet()
-    }
-
-    fun saveMatchId(matchId: String): Match =
-        matchIdRepository.save(Match(matchId, System.currentTimeMillis()))
 }
