@@ -30,6 +30,7 @@ class TftVersionRepository(
                         Key.builder().partitionValue(TftVersion.PARTITION_VALUE).build()
                     )
                 )
+                .scanIndexForward(false)
                 .limit(1)
                 .build()
         ).items().firstOrNull()
