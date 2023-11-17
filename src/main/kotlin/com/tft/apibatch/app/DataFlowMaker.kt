@@ -17,6 +17,7 @@ class DataFlowMaker(
             .mapNotException { puuid -> appService.getMatchIds(puuid, 0, 3) }
             .flatMapConcat { it.asFlow() }
             .mapNotException { matchId -> appService.getMatch(matchId) }
+            .filter { match -> appService.isLatest(match.info.game_version) }
     }
 }
 

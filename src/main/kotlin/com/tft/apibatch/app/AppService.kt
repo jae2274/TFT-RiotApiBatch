@@ -3,7 +3,6 @@ package com.tft.apibatch.app
 import com.tft.apibatch.api.RiotApiClient
 import com.tft.apibatch.api.SummonerTier
 import com.tft.apibatch.api.dto.MatchResponse
-import com.tft.apibatch.domain.entity.TftVersion
 import com.tft.apibatch.domain.service.MatchService
 import com.tft.apibatch.domain.service.SummonerService
 import com.tft.apibatch.domain.service.TftVersionService
@@ -45,7 +44,7 @@ class AppService(
 
 
     suspend fun isLatest(version: String): Boolean {
-        versionService.updateVersionIfLatest(version)
+        versionService.updateVersionIfMoreLatest(version)
         return versionService.isLatest(version)
     }
 

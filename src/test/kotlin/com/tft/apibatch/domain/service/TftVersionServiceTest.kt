@@ -26,7 +26,7 @@ class TftVersionServiceTest : DynamoDBTest() {
         fun whenFirstVersion() = runTest {
 
             // when
-            val isUpdated = versionService.updateVersionIfLatest(targetVersion)
+            val isUpdated = versionService.updateVersionIfMoreLatest(targetVersion)
 
             // then
             Assertions.assertThat(isUpdated).isTrue()
@@ -35,10 +35,10 @@ class TftVersionServiceTest : DynamoDBTest() {
         @Test
         fun whenVersionAlreadyUpdated() = runTest {
             // given
-            versionService.updateVersionIfLatest(targetVersion)
+            versionService.updateVersionIfMoreLatest(targetVersion)
 
             // when
-            val isUpdated = versionService.updateVersionIfLatest(targetVersion)
+            val isUpdated = versionService.updateVersionIfMoreLatest(targetVersion)
 
             // then
             Assertions.assertThat(isUpdated).isFalse()
@@ -47,9 +47,9 @@ class TftVersionServiceTest : DynamoDBTest() {
         @Test
         fun whenVersionNotLatest() = runTest {
             // given
-            versionService.updateVersionIfLatest(targetVersion)
+            versionService.updateVersionIfMoreLatest(targetVersion)
 
-            val isUpdated = versionService.updateVersionIfLatest(oldVersion)
+            val isUpdated = versionService.updateVersionIfMoreLatest(oldVersion)
 
             // then
             Assertions.assertThat(isUpdated).isFalse()
@@ -58,10 +58,10 @@ class TftVersionServiceTest : DynamoDBTest() {
         @Test
         fun whenVersionLatest() = runTest {
             // given
-            versionService.updateVersionIfLatest(targetVersion)
+            versionService.updateVersionIfMoreLatest(targetVersion)
 
             // when
-            val isUpdated = versionService.updateVersionIfLatest(newVersion)
+            val isUpdated = versionService.updateVersionIfMoreLatest(newVersion)
 
             // then
             Assertions.assertThat(isUpdated).isTrue()
@@ -82,7 +82,7 @@ class TftVersionServiceTest : DynamoDBTest() {
         @Test
         fun whenVersionAlreadyUpdated() = runTest {
             // given
-            versionService.updateVersionIfLatest(targetVersion)
+            versionService.updateVersionIfMoreLatest(targetVersion)
 
             // when
             val isLatest = versionService.isLatest(targetVersion)
@@ -94,7 +94,7 @@ class TftVersionServiceTest : DynamoDBTest() {
         @Test
         fun whenVersionNotLatest() = runTest {
             // given
-            versionService.updateVersionIfLatest(targetVersion)
+            versionService.updateVersionIfMoreLatest(targetVersion)
 
             // when
             val isLatest = versionService.isLatest(oldVersion)
@@ -106,7 +106,7 @@ class TftVersionServiceTest : DynamoDBTest() {
         @Test
         fun whenVersionLatest() = runTest {
             // given
-            versionService.updateVersionIfLatest(targetVersion)
+            versionService.updateVersionIfMoreLatest(targetVersion)
 
             // when
             val isLatest = versionService.isLatest(newVersion)

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 class TftVersionService(
     private val versionRepository: TftVersionRepository
 ) {
-    fun updateVersionIfLatest(version: String): Boolean {
+    fun updateVersionIfMoreLatest(version: String): Boolean {
         val latestVersion: TftVersion? = versionRepository.getLatestVersion()
         val versionUpdated = TftVersion.versionUpdatedAt(version)
 
