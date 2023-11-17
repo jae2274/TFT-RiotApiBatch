@@ -61,7 +61,7 @@ class AppServiceTest : DynamoDBTest() {
     }
 
     @Test
-    fun test() = runTest {
+    fun testGetSummoner() = runTest {
         val summonerIds = appService.getSummonerIds(5)
 
         val puuids = appService.getPuuids(summonerIds)
@@ -71,6 +71,18 @@ class AppServiceTest : DynamoDBTest() {
         summonerIds.forEach {
             coVerify(exactly = 1) { apiClientSpy.getSummoner(it) }
             coVerify(exactly = 1) { summonerServiceSpy.saveSummoner(it, any()) }
+        }
+    }
+
+    @Test
+    fun testGetMatchIdsAndGetMatch() = runTest {
+        val summonerId = appService.getSummonerIds(1).first()
+        val puuid = appService.getPuuids(listOf(summonerId)).first()
+
+        val matchIds = appService.getMatchIds(puuid, 0, 3)
+
+        matchIds.forEach {
+            apiClientSpy.getMatch(it)
         }
     }
 }

@@ -22,12 +22,13 @@ class DataFlowMaker(
 private fun <T, R> Flow<T>.mapNotException(suspendFunction1: suspend (T) -> R): Flow<R> {
     return this.map {
         try {
-            suspendFunction1(it)
+            Result.success(suspendFunction1(it))
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            Result.failure(e)
         }
     }
-        .mapNotNull { it }
+        .filter { it.isSuccess }
+        .map { it.getOrThrow() }
 }
 

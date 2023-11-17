@@ -54,12 +54,15 @@ class RiotApiClient(
             }
     }
 
-    suspend fun getMatchIds(puuid: String, start: Int, count: Int): List<String> {
+    suspend fun getMatchIds(puuid: String, start: Int, count: Int, startTime: Long? = null): List<String> {
         val request = ApiRequest(
             method = HttpMethod.GET,
             url = "$asiaApiUrl/tft/match/v1/matches/by-puuid/{puuid}/ids",
             pathVariables = listOf(puuid),
-            queryParams = listOf(Pair("start", start), Pair("count", count)),
+            queryParams = mutableListOf<Pair<String, Any>>(Pair("start", start), Pair("count", count))
+                .also { list ->
+                    startTime?.let { list.add(Pair("startTime", startTime)) }
+                },
             headers = listOf(Pair("X-Riot-Token", apiToken))
         )
 

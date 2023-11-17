@@ -64,23 +64,16 @@ class RiotApiClientTest(
     @Test
     @DisplayName("puuid로 matchid를 알아낼 api를 호출 후, matchid로 경기데이터api를 호출한다.")
     fun callMatches() = runTest {
-        val failedCallPuuIds = mutableSetOf<String>()
-        val failedCallMatchIds = mutableSetOf<String>()
 
 
         val matchIds = puuids
             .mapNotNull { puuid ->
-                riotApiClient.getMatchIds(puuid, 0, 3).also { if (it == null) failedCallPuuIds.add(puuid) }
+                riotApiClient.getMatchIds(puuid, 0, 3)
             }.flatten()
             .toSet()
 
         val matchDTOs = matchIds.mapNotNull { matchId ->
-            riotApiClient.getMatch(matchId).also { if (it == null) failedCallMatchIds }
+            riotApiClient.getMatch(matchId)
         }
-
-        assertAll(
-            { assertThat(failedCallPuuIds).isEmpty() },
-            { assertThat(failedCallMatchIds).isEmpty() },
-        )
     }
 }
