@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.tft.apibatch.actor.ApiActor
 import com.tft.apibatch.actor.ApiRequest
 import com.tft.apibatch.api.dto.LeagueListResponse
+import com.tft.apibatch.api.dto.MatchResponse
 import com.tft.apibatch.api.dto.SummonerResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
@@ -74,7 +75,7 @@ class RiotApiClient(
             }
     }
 
-    suspend fun getMatch(matchId: String): String {
+    suspend fun getMatch(matchId: String): MatchResponse {
         val request = ApiRequest(
             method = HttpMethod.GET,
             url = "$asiaApiUrl/tft/match/v1/matches/{matchId}",
@@ -83,6 +84,9 @@ class RiotApiClient(
         )
 
         return apiActor.callApi(request)
+            .let {
+                objectMapper.readValue(it, MatchResponse::class.java)
+            }
     }
 }
 

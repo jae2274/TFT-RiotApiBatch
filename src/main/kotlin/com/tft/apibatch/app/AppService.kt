@@ -2,6 +2,7 @@ package com.tft.apibatch.app
 
 import com.tft.apibatch.api.RiotApiClient
 import com.tft.apibatch.api.SummonerTier
+import com.tft.apibatch.api.dto.MatchResponse
 import com.tft.apibatch.domain.service.MatchService
 import com.tft.apibatch.domain.service.SummonerService
 import org.springframework.stereotype.Service
@@ -35,7 +36,7 @@ class AppService(
         return matchService.excludeExistedMatchIds(matchIds)
     }
 
-    suspend fun getMatch(matchId: String): String {
+    suspend fun getMatch(matchId: String): MatchResponse {
         return apiClient.getMatch(matchId)
     }
 

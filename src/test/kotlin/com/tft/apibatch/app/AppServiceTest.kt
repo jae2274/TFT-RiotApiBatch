@@ -82,7 +82,7 @@ class AppServiceTest : DynamoDBTest() {
         val matchIds = appService.getMatchIds(puuid, 0, 3)
 
         matchIds.forEach {
-            apiClientSpy.getMatch(it)
+            appService.getMatch(it)
         }
     }
 }

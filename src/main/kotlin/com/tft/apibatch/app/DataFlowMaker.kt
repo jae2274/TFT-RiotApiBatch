@@ -1,5 +1,6 @@
 package com.tft.apibatch.app
 
+import com.tft.apibatch.api.dto.MatchResponse
 import kotlinx.coroutines.flow.*
 import org.springframework.stereotype.Component
 
@@ -7,7 +8,7 @@ import org.springframework.stereotype.Component
 class DataFlowMaker(
     private val appService: AppService
 ) {
-    suspend fun createFlow(): Flow<String> {
+    suspend fun createFlow(): Flow<MatchResponse> {
         val puuids = appService.getSummonerIds(3)
             .let { summonerId -> appService.getPuuids(summonerId) }
 
