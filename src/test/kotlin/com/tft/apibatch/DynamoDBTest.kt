@@ -2,6 +2,7 @@ package com.tft.apibatch
 
 import com.tft.apibatch.domain.repository.MatchRepository
 import com.tft.apibatch.domain.repository.SummonerRepository
+import com.tft.apibatch.domain.repository.TftVersionRepository
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,6 +23,9 @@ open class DynamoDBTest {
     private lateinit var summonerRepository: SummonerRepository
 
     @Autowired
+    private lateinit var versionRepository: TftVersionRepository
+
+    @Autowired
     private lateinit var dynamoDbClient: DynamoDbClient
 
     @BeforeEach
@@ -29,9 +33,11 @@ open class DynamoDBTest {
         CoroutineScope(Dispatchers.IO).launch {
             val promise1 = async { matchRepository.table.truncateTable(dynamoDbClient) }
             val promise2 = async { summonerRepository.table.truncateTable(dynamoDbClient) }
+            val promise3 = async { versionRepository.table.truncateTable(dynamoDbClient) }
 
             promise1.await()
             promise2.await()
+            promise3.await()
         }.join()
     }
 }

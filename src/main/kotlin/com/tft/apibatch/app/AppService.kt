@@ -3,8 +3,10 @@ package com.tft.apibatch.app
 import com.tft.apibatch.api.RiotApiClient
 import com.tft.apibatch.api.SummonerTier
 import com.tft.apibatch.api.dto.MatchResponse
+import com.tft.apibatch.domain.entity.TftVersion
 import com.tft.apibatch.domain.service.MatchService
 import com.tft.apibatch.domain.service.SummonerService
+import com.tft.apibatch.domain.service.TftVersionService
 import org.springframework.stereotype.Service
 
 @Service
@@ -12,6 +14,7 @@ class AppService(
     private val apiClient: RiotApiClient,
     private val summonerService: SummonerService,
     private val matchService: MatchService,
+    private val versionService: TftVersionService
 ) {
     suspend fun getSummonerIds(needSummonerCount: Int): List<String> {
         return getSummonerIdsEntry(needSummonerCount).take(needSummonerCount)
@@ -38,6 +41,12 @@ class AppService(
 
     suspend fun getMatch(matchId: String): MatchResponse {
         return apiClient.getMatch(matchId)
+    }
+
+
+    suspend fun isLatest(version: String): Boolean {
+        versionService.updateVersionIfLatest(version)
+        return versionService.isLatest(version)
     }
 
     private suspend fun getSummonerIdsEntry(

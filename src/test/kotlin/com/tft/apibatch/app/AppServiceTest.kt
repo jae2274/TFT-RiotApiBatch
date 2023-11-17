@@ -4,6 +4,7 @@ import com.tft.apibatch.DynamoDBTest
 import com.tft.apibatch.api.RiotApiClient
 import com.tft.apibatch.domain.service.MatchService
 import com.tft.apibatch.domain.service.SummonerService
+import com.tft.apibatch.domain.service.TftVersionService
 import io.mockk.coVerify
 import io.mockk.junit5.MockKExtension
 import io.mockk.spyk
@@ -11,6 +12,7 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.*
@@ -36,6 +38,9 @@ class AppServiceTest : DynamoDBTest() {
     private lateinit var apiClient: RiotApiClient
     private lateinit var apiClientSpy: RiotApiClient
 
+    @Autowired
+    private lateinit var versionService: TftVersionService
+
     private lateinit var appService: AppService
 
     @PostConstruct
@@ -43,7 +48,7 @@ class AppServiceTest : DynamoDBTest() {
         apiClientSpy = spyk(apiClient)
         summonerServiceSpy = spyk(domainService)
 
-        appService = AppService(apiClientSpy, summonerServiceSpy, matchService)
+        appService = AppService(apiClientSpy, summonerServiceSpy, matchService, versionService)
     }
 
     @Test
@@ -84,5 +89,10 @@ class AppServiceTest : DynamoDBTest() {
         matchIds.forEach {
             appService.getMatch(it)
         }
+    }
+
+
+    @Nested
+    inner class TestVersion {
     }
 }
